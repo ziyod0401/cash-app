@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Учёт Кассы</title>
+    <title>Учёт Кассы - LLC PRO BIO FOODS</title>
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * {
@@ -40,24 +41,25 @@
         }
 
         header {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             border-bottom: 1px solid var(--border);
             padding-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            gap: 20px;
         }
 
         .header-left h1 {
             font-size: 28px;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             letter-spacing: -0.5px;
         }
 
         .header-subtitle {
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .sync-status {
@@ -70,6 +72,7 @@
             border-radius: 6px;
             font-size: 12px;
             color: var(--text-secondary);
+            white-space: nowrap;
         }
 
         .sync-status.connected {
@@ -80,11 +83,6 @@
         .sync-status.error {
             border-color: var(--accent-red);
             color: var(--accent-red);
-        }
-
-        .sync-status.syncing {
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
         }
 
         .sync-indicator {
@@ -102,10 +100,6 @@
         .sync-status.error .sync-indicator {
             background: var(--accent-red);
             animation: none;
-        }
-
-        .sync-status.syncing .sync-indicator {
-            background: var(--accent-blue);
         }
 
         @keyframes pulse {
@@ -168,8 +162,8 @@
         /* Dashboard */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
             margin-bottom: 30px;
         }
 
@@ -177,7 +171,7 @@
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 24px;
+            padding: 20px;
             transition: all 0.3s ease;
         }
 
@@ -188,7 +182,7 @@
 
         .card-label {
             color: var(--text-secondary);
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 8px;
@@ -196,7 +190,7 @@
         }
 
         .card-value {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
             margin-bottom: 4px;
             letter-spacing: -1px;
@@ -204,7 +198,8 @@
 
         .card-sub {
             color: var(--text-secondary);
-            font-size: 12px;
+            font-size: 11px;
+            line-height: 1.4;
         }
 
         /* Forms */
@@ -227,7 +222,7 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 16px;
             margin-bottom: 16px;
         }
@@ -280,7 +275,7 @@
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: #2563eb;
             transform: translateY(-2px);
             box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
@@ -305,21 +300,17 @@
         .btn-danger {
             background: var(--accent-red);
             color: white;
-            padding: 8px 14px;
-            font-size: 12px;
-            min-width: 80px;
+            padding: 10px 16px;
+            font-size: 13px;
         }
 
         .btn-danger:hover {
             background: #dc2626;
         }
 
-        @media (max-width: 768px) {
-            .btn-danger {
-                padding: 10px 16px;
-                font-size: 13px;
-                min-width: 90px;
-            }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
         }
 
         .form-row {
@@ -327,6 +318,7 @@
             gap: 16px;
             justify-content: flex-end;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         /* Tables & Lists */
@@ -412,7 +404,7 @@
 
         .category-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 16px;
         }
 
@@ -483,7 +475,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 16px;
+            margin-top: 12px;
         }
 
         .category-tag {
@@ -513,6 +505,7 @@
             cursor: pointer;
             color: var(--accent-red);
             font-weight: bold;
+            line-height: 1;
         }
 
         /* Empty State */
@@ -545,15 +538,6 @@
             line-height: 1.5;
         }
 
-        .info-box code {
-            background: var(--bg-primary);
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: monospace;
-            color: var(--accent-blue);
-            word-break: break-all;
-        }
-
         .success-message {
             position: fixed;
             top: 20px;
@@ -580,6 +564,66 @@
             max-width: 300px;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 24px;
+            width: 32px;
+            height: 32px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -588,7 +632,6 @@
 
             header {
                 flex-direction: column;
-                gap: 12px;
             }
 
             h1 {
@@ -596,7 +639,16 @@
             }
 
             .dashboard-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .card-value {
+                font-size: 20px;
             }
 
             .tabs {
@@ -636,7 +688,7 @@
     <div class="container">
         <header>
             <div class="header-left">
-                <h1>📊 Учёт Кассы</h1>
+                <h1>📊 Касса</h1>
                 <div class="header-subtitle">LLC PRO BIO FOODS</div>
             </div>
             <div class="sync-status" id="syncStatus">
@@ -647,54 +699,57 @@
 
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('dashboard')">Панель</button>
-            <button class="tab-btn" onclick="switchTab('add')">Добавить</button>
+            <button class="tab-btn" onclick="switchTab('add')">+ Операция</button>
             <button class="tab-btn" onclick="switchTab('history')">История</button>
             <button class="tab-btn" onclick="switchTab('analytics')">Аналитика</button>
-            <button class="tab-btn" onclick="switchTab('settings')">Настройки</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️ Настройки</button>
         </div>
 
         <!-- DASHBOARD TAB -->
         <div id="dashboard" class="tab-content active">
             <div class="dashboard-grid">
                 <div class="card">
-                    <div class="card-label">Остаток (SUM)</div>
+                    <div class="card-label">💰 Остаток SUM</div>
                     <div class="card-value" id="balanceSUM">0</div>
                     <div class="card-sub" id="balanceSUMDetail"></div>
                 </div>
 
                 <div class="card">
-                    <div class="card-label">Остаток (USD)</div>
+                    <div class="card-label">💵 Остаток USD</div>
                     <div class="card-value" id="balanceUSD">0</div>
                     <div class="card-sub" id="balanceUSDDetail"></div>
                 </div>
 
                 <div class="card">
-                    <div class="card-label">Приходы сегодня</div>
-                    <div class="card-value" id="incomesToday">0</div>
-                    <div class="card-sub" id="incomesTodayDetail"></div>
+                    <div class="card-label">➕ Приход SUM</div>
+                    <div class="card-value" id="incomeTodaySUM" style="color: var(--accent-green);">0</div>
+                    <div class="card-sub" id="incomeTodaySUMDetail"></div>
                 </div>
 
                 <div class="card">
-                    <div class="card-label">Расходы сегодня</div>
-                    <div class="card-value" id="expensesToday">0</div>
-                    <div class="card-sub" id="expensesTodayDetail"></div>
+                    <div class="card-label">➕ Приход USD</div>
+                    <div class="card-value" id="incomeTodayUSD" style="color: var(--accent-green);">0</div>
+                    <div class="card-sub" id="incomeTodayUSDDetail"></div>
                 </div>
 
                 <div class="card">
-                    <div class="card-label">Операций за 7 дней</div>
-                    <div class="card-value" id="operationsCount">0</div>
-                    <div class="card-sub">Всего транзакций</div>
+                    <div class="card-label">➖ Расход SUM</div>
+                    <div class="card-value" id="expenseTodaySUM" style="color: var(--accent-red);">0</div>
+                    <div class="card-sub" id="expenseTodaySUMDetail"></div>
                 </div>
 
                 <div class="card">
-                    <div class="card-label">Средний расход</div>
-                    <div class="card-value" id="avgExpense">0</div>
-                    <div class="card-sub" id="avgExpenseDetail"></div>
+                    <div class="card-label">➖ Расход USD</div>
+                    <div class="card-value" id="expenseTodayUSD" style="color: var(--accent-red);">0</div>
+                    <div class="card-sub" id="expenseTodayUSDDetail"></div>
                 </div>
             </div>
 
             <div class="form-section">
-                <div class="form-title">📈 Последние операции</div>
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div class="form-title" style="margin: 0;">📈 Последние операции</div>
+                    <button class="btn btn-primary btn-small" onclick="openModal('adjustBalance')">🔧 Корректировка</button>
+                </div>
                 <div id="recentOps" class="operations-list"></div>
             </div>
         </div>
@@ -706,7 +761,7 @@
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Тип операции</label>
+                        <label>Тип</label>
                         <select id="operationType" onchange="updateCategorySelect()">
                             <option value="expense">Расход</option>
                             <option value="income">Приход</option>
@@ -716,7 +771,7 @@
                     <div class="form-group">
                         <label>Категория</label>
                         <select id="category">
-                            <option>Выбрать категорию</option>
+                            <option>Выбрать</option>
                         </select>
                     </div>
 
@@ -728,8 +783,8 @@
                     <div class="form-group">
                         <label>Валюта</label>
                         <select id="currency">
-                            <option value="SUM">SUM (Сум)</option>
-                            <option value="USD">USD (Доллар)</option>
+                            <option value="SUM">SUM</option>
+                            <option value="USD">USD</option>
                         </select>
                     </div>
 
@@ -739,14 +794,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Описание (опционально)</label>
+                        <label>Описание</label>
                         <input type="text" id="description" placeholder="Заметка">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <button class="btn btn-secondary" onclick="resetForm()">Очистить</button>
-                    <button class="btn btn-primary" id="addBtn" onclick="addOperation()">Добавить операцию</button>
+                    <button class="btn btn-primary" onclick="addOperation()">Добавить</button>
                 </div>
             </div>
         </div>
@@ -755,18 +810,18 @@
         <div id="history" class="tab-content">
             <div class="form-section" style="margin-bottom: 20px;">
                 <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <div class="form-group" style="flex: 1; min-width: 200px;">
-                        <label>Фильтр по категории</label>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>Категория</label>
                         <select id="filterCategory" onchange="filterOperations()">
-                            <option value="">Все категории</option>
+                            <option value="">Все</option>
                         </select>
                     </div>
-                    <div class="form-group" style="flex: 1; min-width: 200px;">
-                        <label>Фильтр по типу</label>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>Тип</label>
                         <select id="filterType" onchange="filterOperations()">
-                            <option value="">Все операции</option>
-                            <option value="expense">Только расходы</option>
-                            <option value="income">Только приходы</option>
+                            <option value="">Все</option>
+                            <option value="expense">Расходы</option>
+                            <option value="income">Приходы</option>
                         </select>
                     </div>
                     <div style="flex: 1; min-width: 150px; display: flex; align-items: flex-end;">
@@ -781,17 +836,17 @@
         <!-- ANALYTICS TAB -->
         <div id="analytics" class="tab-content">
             <div class="chart-container">
-                <div class="chart-title">📊 Статистика по категориям (расходы)</div>
+                <div class="chart-title">📊 Расходы по категориям</div>
                 <div id="expenseStats" class="category-stats"></div>
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">📊 Статистика по категориям (приходы)</div>
+                <div class="chart-title">📊 Приходы по категориям</div>
                 <div id="incomeStats" class="category-stats"></div>
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">📅 Сумма по дням (последние 7 дней)</div>
+                <div class="chart-title">📅 По дням (последние 7 дней)</div>
                 <div id="dailyStats" class="category-stats"></div>
             </div>
         </div>
@@ -800,48 +855,31 @@
         <div id="settings" class="tab-content">
             <div class="settings-grid">
                 <div class="settings-section">
-                    <div class="settings-title">☁️ Синхронизация Google Apps Script</div>
+                    <div class="settings-title">☁️ Google Apps Script</div>
                     
                     <div class="info-box">
-                        Инструкция по настройке в файле <code>SETUP_GOOGLE_APPS_SCRIPT.md</code>
+                        Инструкция: SETUP_GOOGLE_APPS_SCRIPT.md
                     </div>
 
                     <div class="form-group" style="margin-bottom: 12px;">
                         <label>ID Таблицы</label>
-                        <textarea id="sheetId" placeholder="Скопируй ID из URL таблицы" rows="2" style="font-size: 12px;"></textarea>
+                        <textarea id="sheetId" placeholder="ID" rows="2" style="font-size: 12px;"></textarea>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 16px;">
                         <label>Deployment URL</label>
-                        <textarea id="deployUrl" placeholder="Скопируй URL из Apps Script" rows="2" style="font-size: 12px;"></textarea>
+                        <textarea id="deployUrl" placeholder="URL" rows="2" style="font-size: 12px;"></textarea>
                     </div>
 
-                    <button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" id="syncBtn" onclick="setupGoogleAppsScript()">🔗 Синхронизировать</button>
-                    <button class="btn btn-secondary" style="width: 100%;" onclick="downloadSetupGuide()">📖 Инструкция</button>
-                </div>
-
-                <div class="settings-section">
-                    <div class="settings-title">💰 Начальный остаток</div>
-                    
-                    <div class="form-group" style="margin-bottom: 12px;">
-                        <label>Остаток в SUM</label>
-                        <input type="number" id="initialSUM" placeholder="0" step="0.01">
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 16px;">
-                        <label>Остаток в USD</label>
-                        <input type="number" id="initialUSD" placeholder="0" step="0.01">
-                    </div>
-
-                    <button class="btn btn-primary" style="width: 100%;" onclick="saveInitialBalance()">Сохранить</button>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="setupGoogleAppsScript()">🔗 Синхронизировать</button>
                 </div>
 
                 <div class="settings-section">
                     <div class="settings-title">🏷️ Категории расходов</div>
                     
                     <div class="category-input-group">
-                        <input type="text" id="expenseCategoryInput" placeholder="Новая категория">
-                        <button class="btn btn-primary" onclick="addExpenseCategory()" style="padding: 10px 16px;">+</button>
+                        <input type="text" id="expenseCategoryInput" placeholder="Категория">
+                        <button class="btn btn-primary btn-small" onclick="addExpenseCategory()">+</button>
                     </div>
 
                     <div class="category-list" id="expenseCategoryList"></div>
@@ -851,30 +889,62 @@
                     <div class="settings-title">🏷️ Категории приходов</div>
                     
                     <div class="category-input-group">
-                        <input type="text" id="incomeCategoryInput" placeholder="Новая категория">
-                        <button class="btn btn-primary" onclick="addIncomeCategory()" style="padding: 10px 16px;">+</button>
+                        <input type="text" id="incomeCategoryInput" placeholder="Категория">
+                        <button class="btn btn-primary btn-small" onclick="addIncomeCategory()">+</button>
                     </div>
 
                     <div class="category-list" id="incomeCategoryList"></div>
                 </div>
 
                 <div class="settings-section">
-                    <div class="settings-title">⚙️ Экспорт/Импорт</div>
+                    <div class="settings-title">⚙️ Резервная копия</div>
                     
-                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="exportAllData()">📥 Загрузить данные</button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="exportAllData()">📥 Загрузить</button>
                     
-                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;" onclick="document.getElementById('importInput').click()">📤 Загрузить резервную копию</button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;" onclick="document.getElementById('importInput').click()">📤 Загрузить копию</button>
 
                     <input type="file" id="importInput" style="display: none;" accept=".json" onchange="importData(event)">
 
-                    <button class="btn btn-danger" style="width: 100%;" onclick="clearAllData()">Очистить все данные</button>
+                    <button class="btn btn-danger" style="width: 100%;" onclick="clearAllData()">Очистить данные</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- BALANCE ADJUSTMENT MODAL -->
+    <div id="adjustBalance" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">🔧 Корректировка баланса</div>
+            <button class="close-modal" onclick="closeModal('adjustBalance')">✕</button>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label>Фактический SUM</label>
+                <input type="number" id="actualBalanceSUM" placeholder="0" step="0.01">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label>Фактический USD</label>
+                <input type="number" id="actualBalanceUSD" placeholder="0" step="0.01">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label>Дата корректировки</label>
+                <input type="datetime-local" id="adjustDate">
+            </div>
+
+            <div id="adjustSummary" style="background: var(--bg-primary); padding: 16px; border-radius: 6px; margin-bottom: 20px; display: none;">
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Будет создано:</div>
+                <div id="adjustSummaryText" style="font-size: 12px; line-height: 1.6;"></div>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('adjustBalance')">Отмена</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="applyBalanceAdjustment()">Применить</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Data structure
         let appData = {
             initialBalanceSUM: 0,
             initialBalanceUSD: 0,
@@ -888,7 +958,6 @@
         let isSynced = false;
         let lastSync = null;
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             setDefaultDateTime();
@@ -897,8 +966,8 @@
             updateDashboard();
             updateHistoryFilter();
             checkGoogleAppsScriptConnection();
-            // Auto-sync every 30 seconds
             setInterval(checkGoogleAppsScriptConnection, 30000);
+            setInterval(autoSync, 10000);
         });
 
         function loadData() {
@@ -920,6 +989,7 @@
             const hour = String(now.getHours()).padStart(2, '0');
             const minute = String(now.getMinutes()).padStart(2, '0');
             document.getElementById('dateTime').value = `${year}-${month}-${day}T${hour}:${minute}`;
+            document.getElementById('adjustDate').value = `${year}-${month}-${day}T${hour}:${minute}`;
         }
 
         function switchTab(tabName) {
@@ -930,27 +1000,111 @@
             updateDashboard();
         }
 
-        function setupGoogleAppsScript() {
-            const sheetId = document.getElementById('sheetId').value.trim();
-            const deployUrl = document.getElementById('deployUrl').value.trim();
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            setDefaultDateTime();
+            if (modalId === 'adjustBalance') {
+                const { balanceSUM, balanceUSD } = calculateBalance();
+                document.getElementById('actualBalanceSUM').value = balanceSUM;
+                document.getElementById('actualBalanceUSD').value = balanceUSD;
+                updateAdjustSummary();
+            }
+        }
 
-            if (!sheetId || !deployUrl) {
-                showError('Заполни оба поля!');
-                return;
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function updateAdjustSummary() {
+            const actualSUM = parseFloat(document.getElementById('actualBalanceSUM').value) || 0;
+            const actualUSD = parseFloat(document.getElementById('actualBalanceUSD').value) || 0;
+            const { balanceSUM, balanceUSD } = calculateBalance();
+
+            const diffSUM = actualSUM - balanceSUM;
+            const diffUSD = actualUSD - balanceUSD;
+
+            let summary = '';
+            if (diffSUM !== 0) {
+                summary += `<div>${diffSUM > 0 ? '➕' : '➖'} ${Math.abs(diffSUM).toLocaleString('ru-RU')} SUM (${diffSUM > 0 ? 'Приход' : 'Расход'})</div>`;
+            }
+            if (diffUSD !== 0) {
+                summary += `<div>${diffUSD > 0 ? '➕' : '➖'} ${Math.abs(diffUSD).toLocaleString('ru-RU')} USD (${diffUSD > 0 ? 'Приход' : 'Расход'})</div>`;
             }
 
-            appData.sheetId = sheetId;
-            appData.deployUrl = deployUrl;
-            saveData();
+            const summaryDiv = document.getElementById('adjustSummary');
+            if (diffSUM !== 0 || diffUSD !== 0) {
+                summaryDiv.style.display = 'block';
+                document.getElementById('adjustSummaryText').innerHTML = summary;
+            } else {
+                summaryDiv.style.display = 'none';
+            }
+        }
 
-            testGoogleAppsScriptConnection();
+        function applyBalanceAdjustment() {
+            const actualSUM = parseFloat(document.getElementById('actualBalanceSUM').value) || 0;
+            const actualUSD = parseFloat(document.getElementById('actualBalanceUSD').value) || 0;
+            const adjustDate = document.getElementById('adjustDate').value;
+
+            const { balanceSUM, balanceUSD } = calculateBalance();
+            const diffSUM = actualSUM - balanceSUM;
+            const diffUSD = actualUSD - balanceUSD;
+
+            if (diffSUM !== 0) {
+                appData.operations.push({
+                    id: Date.now(),
+                    type: diffSUM > 0 ? 'income' : 'expense',
+                    category: 'Корректировка баланса',
+                    amount: Math.abs(diffSUM),
+                    currency: 'SUM',
+                    dateTime: new Date(adjustDate).getTime(),
+                    description: 'Корректировка баланса',
+                    timestamp: new Date().getTime()
+                });
+            }
+
+            if (diffUSD !== 0) {
+                appData.operations.push({
+                    id: Date.now() + 1,
+                    type: diffUSD > 0 ? 'income' : 'expense',
+                    category: 'Корректировка баланса',
+                    amount: Math.abs(diffUSD),
+                    currency: 'USD',
+                    dateTime: new Date(adjustDate).getTime(),
+                    description: 'Корректировка баланса',
+                    timestamp: new Date().getTime()
+                });
+            }
+
+            saveData();
+            updateDashboard();
+            updateHistoryFilter();
+            closeModal('adjustBalance');
+            if (isSynced) syncWithGoogleAppsScript();
+            showSuccess('Баланс скорректирован');
+        }
+
+        function calculateBalance() {
+            let balanceSUM = appData.initialBalanceSUM;
+            let balanceUSD = appData.initialBalanceUSD;
+
+            appData.operations.forEach(op => {
+                if (op.type === 'income') {
+                    if (op.currency === 'SUM') balanceSUM += op.amount;
+                    else balanceUSD += op.amount;
+                } else {
+                    if (op.currency === 'SUM') balanceSUM -= op.amount;
+                    else balanceUSD -= op.amount;
+                }
+            });
+
+            return { balanceSUM, balanceUSD };
         }
 
         function updateCategorySelect() {
             const type = document.getElementById('operationType').value;
             const categories = type === 'expense' ? appData.expenseCategories : appData.incomeCategories;
             const select = document.getElementById('category');
-            select.innerHTML = '<option>Выбрать категорию</option>';
+            select.innerHTML = '<option>Выбрать</option>';
             categories.forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat;
@@ -971,16 +1125,18 @@
             const container = document.getElementById(elementId);
             container.innerHTML = '';
             categories.forEach(cat => {
-                const tag = document.createElement('div');
-                tag.className = 'category-tag';
-                tag.innerHTML = `${cat} <span class="remove" onclick="removeCategory('${cat}', '${type}')">×</span>`;
-                container.appendChild(tag);
+                if (cat !== 'Корректировка баланса') {
+                    const tag = document.createElement('div');
+                    tag.className = 'category-tag';
+                    tag.innerHTML = `${cat} <span class="remove" onclick="removeCategory('${cat}', '${type}')">×</span>`;
+                    container.appendChild(tag);
+                }
             });
         }
 
         function addExpenseCategory() {
             const input = document.getElementById('expenseCategoryInput');
-            if (input.value.trim()) {
+            if (input.value.trim() && !appData.expenseCategories.includes(input.value.trim())) {
                 appData.expenseCategories.push(input.value.trim());
                 saveData();
                 renderCategoryLists();
@@ -991,7 +1147,7 @@
 
         function addIncomeCategory() {
             const input = document.getElementById('incomeCategoryInput');
-            if (input.value.trim()) {
+            if (input.value.trim() && !appData.incomeCategories.includes(input.value.trim())) {
                 appData.incomeCategories.push(input.value.trim());
                 saveData();
                 renderCategoryLists();
@@ -1011,15 +1167,6 @@
             }
         }
 
-        function saveInitialBalance() {
-            appData.initialBalanceSUM = parseFloat(document.getElementById('initialSUM').value) || 0;
-            appData.initialBalanceUSD = parseFloat(document.getElementById('initialUSD').value) || 0;
-            saveData();
-            updateDashboard();
-            if (isSynced) syncWithGoogleAppsScript();
-            showSuccess('Начальный остаток сохранён');
-        }
-
         function addOperation() {
             const type = document.getElementById('operationType').value;
             const category = document.getElementById('category').value;
@@ -1028,12 +1175,12 @@
             const dateTime = document.getElementById('dateTime').value;
             const description = document.getElementById('description').value;
 
-            if (!category || category === 'Выбрать категорию' || !amount || amount <= 0 || !dateTime) {
+            if (!category || category === 'Выбрать' || !amount || amount <= 0 || !dateTime) {
                 showError('Заполните все поля');
                 return;
             }
 
-            const operation = {
+            appData.operations.push({
                 id: Date.now(),
                 type,
                 category,
@@ -1042,9 +1189,8 @@
                 dateTime: new Date(dateTime).getTime(),
                 description,
                 timestamp: new Date().getTime()
-            };
+            });
 
-            appData.operations.push(operation);
             saveData();
             updateDashboard();
             updateHistoryFilter();
@@ -1059,7 +1205,7 @@
 
         function resetForm() {
             document.getElementById('operationType').value = 'expense';
-            document.getElementById('category').value = 'Выбрать категорию';
+            document.getElementById('category').value = 'Выбрать';
             document.getElementById('amount').value = '';
             document.getElementById('description').value = '';
             setDefaultDateTime();
@@ -1069,56 +1215,41 @@
         function updateDashboard() {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-            let balanceSUM = appData.initialBalanceSUM;
-            let balanceUSD = appData.initialBalanceUSD;
+            const { balanceSUM, balanceUSD } = calculateBalance();
+
             let incomeTodaySUM = 0, incomeTodayUSD = 0;
             let expenseTodaySUM = 0, expenseTodayUSD = 0;
-            let weekOperations = 0;
 
             appData.operations.forEach(op => {
                 const opDate = new Date(op.dateTime);
                 const opToday = new Date(opDate.getFullYear(), opDate.getMonth(), opDate.getDate());
 
-                if (op.type === 'income') {
-                    if (op.currency === 'SUM') balanceSUM += op.amount;
-                    else balanceUSD += op.amount;
-                    if (opToday.getTime() === today.getTime()) {
+                if (opToday.getTime() === today.getTime()) {
+                    if (op.type === 'income') {
                         if (op.currency === 'SUM') incomeTodaySUM += op.amount;
                         else incomeTodayUSD += op.amount;
-                    }
-                } else {
-                    if (op.currency === 'SUM') balanceSUM -= op.amount;
-                    else balanceUSD -= op.amount;
-                    if (opToday.getTime() === today.getTime()) {
+                    } else {
                         if (op.currency === 'SUM') expenseTodaySUM += op.amount;
                         else expenseTodayUSD += op.amount;
                     }
                 }
-
-                if (opDate >= weekAgo) weekOperations++;
             });
 
-            document.getElementById('balanceSUM').textContent = formatCurrency(balanceSUM, 'SUM');
-            document.getElementById('balanceUSD').textContent = formatCurrency(balanceUSD, 'USD');
-            document.getElementById('balanceSUMDetail').textContent = `Всего: ${formatCurrency(balanceSUM, 'SUM')}`;
-            document.getElementById('balanceUSDDetail').textContent = `Всего: ${formatCurrency(balanceUSD, 'USD')}`;
+            document.getElementById('balanceSUM').textContent = formatCurrency(balanceSUM);
+            document.getElementById('balanceUSD').textContent = formatCurrency(balanceUSD);
+            document.getElementById('balanceSUMDetail').textContent = `Всего`;
+            document.getElementById('balanceUSDDetail').textContent = `Всего`;
 
-            document.getElementById('incomesToday').textContent = formatCurrency(incomeTodaySUM + incomeTodayUSD, 'SUM');
-            document.getElementById('incomesTodayDetail').textContent = `${formatCurrency(incomeTodaySUM, 'SUM')} + ${formatCurrency(incomeTodayUSD, 'USD')}`;
+            document.getElementById('incomeTodaySUM').textContent = formatCurrency(incomeTodaySUM);
+            document.getElementById('incomeTodayUSD').textContent = formatCurrency(incomeTodayUSD);
+            document.getElementById('incomeTodaySUMDetail').textContent = `Сегодня`;
+            document.getElementById('incomeTodayUSDDetail').textContent = `Сегодня`;
 
-            document.getElementById('expensesToday').textContent = formatCurrency(expenseTodaySUM + expenseTodayUSD, 'SUM');
-            document.getElementById('expensesTodayDetail').textContent = `${formatCurrency(expenseTodaySUM, 'SUM')} + ${formatCurrency(expenseTodayUSD, 'USD')}`;
-
-            document.getElementById('operationsCount').textContent = weekOperations;
-
-            const totalExpenses = appData.operations.filter(op => op.type === 'expense').length;
-            const avgExp = totalExpenses > 0 
-                ? appData.operations.filter(op => op.type === 'expense').reduce((sum, op) => sum + op.amount, 0) / totalExpenses
-                : 0;
-            document.getElementById('avgExpense').textContent = formatCurrency(avgExp, 'SUM');
-            document.getElementById('avgExpenseDetail').textContent = `На расход`;
+            document.getElementById('expenseTodaySUM').textContent = formatCurrency(expenseTodaySUM);
+            document.getElementById('expenseTodayUSD').textContent = formatCurrency(expenseTodayUSD);
+            document.getElementById('expenseTodaySUMDetail').textContent = `Сегодня`;
+            document.getElementById('expenseTodayUSDDetail').textContent = `Сегодня`;
 
             const recent = appData.operations.slice().sort((a, b) => b.dateTime - a.dateTime).slice(0, 5);
             const recentHtml = recent.length > 0 
@@ -1126,8 +1257,6 @@
                 : '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Нет операций</div></div>';
             document.getElementById('recentOps').innerHTML = recentHtml;
 
-            document.getElementById('initialSUM').value = appData.initialBalanceSUM;
-            document.getElementById('initialUSD').value = appData.initialBalanceUSD;
             document.getElementById('sheetId').value = appData.sheetId;
             document.getElementById('deployUrl').value = appData.deployUrl;
 
@@ -1145,12 +1274,12 @@
                         <div class="operation-category">${op.category}</div>
                         <div class="operation-details">
                             <span>${date} ${time}</span>
-                            ${op.description ? `<span>${op.description}</span>` : ''}
+                            ${op.description ? `<span>Заметка: ${op.description}</span>` : ''}
                         </div>
                     </div>
                     <div class="operation-right">
-                        <div class="operation-amount ${amountClass}">${sign} ${formatCurrency(op.amount, op.currency)}</div>
-                        <button class="btn btn-danger" onclick="deleteOperation(${op.id})">Удалить</button>
+                        <div class="operation-amount ${amountClass}">${sign} ${formatCurrency(op.amount)} ${op.currency}</div>
+                        <button class="btn btn-danger btn-small" onclick="deleteOperation(${op.id})">Удалить</button>
                     </div>
                 </div>
             `;
@@ -1158,7 +1287,7 @@
 
         function updateHistoryFilter() {
             const filterCategory = document.getElementById('filterCategory');
-            filterCategory.innerHTML = '<option value="">Все категории</option>';
+            filterCategory.innerHTML = '<option value="">Все</option>';
             
             const allCategories = new Set([...appData.expenseCategories, ...appData.incomeCategories]);
             allCategories.forEach(cat => {
@@ -1220,7 +1349,7 @@
                 .map(([category, data]) => `
                     <div class="stat-item">
                         <div class="stat-label">${category}</div>
-                        <div class="stat-value">${formatCurrency(data.sum, 'SUM')}</div>
+                        <div class="stat-value">${formatCurrency(data.sum)}</div>
                         <div class="stat-badge">Операций: ${data.count}</div>
                     </div>
                 `)
@@ -1252,26 +1381,41 @@
             const html = Object.entries(stats).map(([date, data]) => `
                 <div class="stat-item">
                     <div class="stat-label">${date}</div>
-                    <div style="font-size: 13px; color: var(--accent-green); margin-bottom: 6px;">+${formatCurrency(data.income, 'SUM')}</div>
-                    <div style="font-size: 13px; color: var(--accent-red);">−${formatCurrency(data.expense, 'SUM')}</div>
+                    <div style="font-size: 13px; color: var(--accent-green); margin-bottom: 6px;">➕ ${formatCurrency(data.income)}</div>
+                    <div style="font-size: 13px; color: var(--accent-red);">➖ ${formatCurrency(data.expense)}</div>
                 </div>
             `).join('');
 
             document.getElementById('dailyStats').innerHTML = html;
         }
 
-        function formatCurrency(value, currency) {
-            const formatted = new Intl.NumberFormat('ru-RU', { 
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('ru-RU', { 
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0 
             }).format(Math.abs(value));
-            return `${formatted} ${currency}`;
+        }
+
+        function setupGoogleAppsScript() {
+            const sheetId = document.getElementById('sheetId').value.trim();
+            const deployUrl = document.getElementById('deployUrl').value.trim();
+
+            if (!sheetId || !deployUrl) {
+                showError('Заполни оба поля!');
+                return;
+            }
+
+            appData.sheetId = sheetId;
+            appData.deployUrl = deployUrl;
+            saveData();
+
+            testGoogleAppsScriptConnection();
         }
 
         async function testGoogleAppsScriptConnection() {
             if (!appData.deployUrl) return;
 
-            updateSyncStatus('Тестирование...', 'syncing');
+            updateSyncStatus('Тестирование...', 'connected');
 
             try {
                 const response = await fetch(appData.deployUrl);
@@ -1280,14 +1424,14 @@
                     isSynced = true;
                     lastSync = new Date();
                     loadFromGoogleAppsScript();
-                    showSuccess('Подключение успешно!');
+                    showSuccess('Подключено!');
                 } else {
-                    updateSyncStatus('Ошибка подключения', 'error');
+                    updateSyncStatus('Ошибка', 'error');
                     isSynced = false;
-                    showError('Ошибка при подключении');
+                    showError('Ошибка подключения');
                 }
             } catch (error) {
-                updateSyncStatus('Ошибка подключения', 'error');
+                updateSyncStatus('Ошибка', 'error');
                 isSynced = false;
                 showError('Ошибка: ' + error.message);
             }
@@ -1307,11 +1451,11 @@
                     lastSync = new Date();
                     loadFromGoogleAppsScript();
                 } else {
-                    updateSyncStatus('Ошибка подключения', 'error');
+                    updateSyncStatus('Ошибка', 'error');
                     isSynced = false;
                 }
             } catch (error) {
-                updateSyncStatus('Ошибка подключения', 'error');
+                updateSyncStatus('Ошибка', 'error');
                 isSynced = false;
             }
         }
@@ -1366,10 +1510,16 @@
             }
         }
 
+        function autoSync() {
+            if (isSynced && appData.deployUrl) {
+                syncWithGoogleAppsScript();
+            }
+        }
+
         function exportToExcel() {
             try {
                 if (typeof XLSX === 'undefined') {
-                    showError('Библиотека Excel еще загружается, подожди секунду и попробуй снова');
+                    showError('Библиотека загружается, подожди');
                     return;
                 }
 
@@ -1396,7 +1546,6 @@
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Касса");
                 
-                // Форматирование колонок
                 ws['!cols'] = [
                     { wch: 12 },
                     { wch: 10 },
@@ -1409,9 +1558,9 @@
 
                 const fileName = `cash_report_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.xlsx`;
                 XLSX.writeFile(wb, fileName);
-                showSuccess('Данные экспортированы в Excel');
+                showSuccess('Экспортировано в Excel');
             } catch (error) {
-                showError('Ошибка при экспорте: ' + error.message);
+                showError('Ошибка: ' + error.message);
             }
         }
 
@@ -1441,18 +1590,14 @@
                     renderCategoryLists();
                     showSuccess('Данные загружены');
                 } catch (error) {
-                    showError('Ошибка при загрузке файла');
+                    showError('Ошибка при загрузке');
                 }
             };
             reader.readAsText(file);
         }
 
-        function downloadSetupGuide() {
-            showSuccess('Смотри файл SETUP_GOOGLE_APPS_SCRIPT.md');
-        }
-
         function clearAllData() {
-            if (confirm('Это удалит ВСЕ данные! Вы уверены?')) {
+            if (confirm('Удалить ВСЕ данные?')) {
                 appData = {
                     initialBalanceSUM: 0,
                     initialBalanceUSD: 0,
@@ -1467,7 +1612,6 @@
                 updateHistoryFilter();
                 renderCategoryLists();
                 showSuccess('Данные очищены');
-                if (isSynced) syncWithGoogleAppsScript();
             }
         }
 
@@ -1486,6 +1630,20 @@
             document.body.appendChild(msg);
             setTimeout(() => msg.remove(), 3000);
         }
+
+        // Закрытие модала при клике на фон
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // Обновление превью при изменении данных в модале
+        document.addEventListener('change', (e) => {
+            if (e.target.id === 'actualBalanceSUM' || e.target.id === 'actualBalanceUSD') {
+                updateAdjustSummary();
+            }
+        });
     </script>
 </body>
 </html>
