@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Касса - LLC PRO BIO FOODS</title>
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>Касса</h1>
+                <div class="header-subtitle">LLC PRO BIO FOODS</div>
+            </div>
+            <div class="sync-badge" id="syncStatus">
+                <div class="sync-dot"></div>
+                <span id="syncText">Не настроено</span>
+            </div>
+        </header>
+
+        <div class="offline-notice" id="offlineNotice">
+            ⚠️ Режим офлайн. Изменения будут синхронизированы при подключении интернета.
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Панель</button>
+            <button class="tab-btn" onclick="switchTab('add')">➕ Операция</button>
+            <button class="tab-btn" onclick="switchTab('history')">📋 История</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">📈 Аналитика</button>
+            <button class="tab-btn" onclick="switchTab('converter')">💱 Конвертер</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️ Настройки</button>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="tab-content active">
+            <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: center;">
+                <button class="btn btn-secondary" id="cashAllBtn" onclick="switchCashView('all')" style="padding: 10px 16px;">📊 Все кассы</button>
+                <div id="cashButtons" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+                <button class="btn btn-primary" style="padding: 10px 16px; margin-left: auto;" onclick="openModal('exchangeModal')">💱 Обменять валюту</button>
+            </div>
+
+            <div class="dashboard-grid" id="mainStats">
+            </div>
+
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div class="section-title">📈 Последние операции</div>
+                    <button class="btn btn-primary btn-small" onclick="openModal('adjustBalance')">🔧 Корректировка</button>
+                </div>
+                <div id="recentOps" class="operations-list"></div>
+            </div>
+        </div>
+
+        <!-- Add Operation -->
+        <div id="add" class="tab-content">
+            <div class="section">
+                <div class="section-title">Добавить операцию</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Касса</label>
+                        <select id="operationCash">
+                            <option>Выбрать</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Тип</label>
+                        <select id="operationType" onchange="updateCategorySelect()">
+                            <option value="expense">Расход</option>
+                            <option value="income">Приход</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <select id="category">
+                            <option>Выбрать</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Сумма</label>
+                        <input type="text" id="amount" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Валюта</label>
+                        <select id="currency">
+                            <option value="SUM">SUM</option>
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Дата и время</label>
+                        <input type="datetime-local" id="dateTime">
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <input type="text" id="description" placeholder="Заметка">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <button class="btn btn-secondary" onclick="resetForm()">Очистить</button>
+                    <button class="btn btn-secondary" onclick="openModal('templatesModal')">⭐ Шаблоны</button>
+                    <button class="btn btn-primary" onclick="addOperation()">Добавить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div id="history" class="tab-content">
+            <div class="section">
+                <div class="filter-controls">
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>Поиск</label>
+                        <input type="text" id="searchInput" placeholder="Поиск по категории или заметке" oninput="filterOperations()">
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>От даты</label>
+                        <input type="date" id="dateFrom" onchange="filterOperations()">
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>До даты</label>
+                        <input type="date" id="dateTo" onchange="filterOperations()">
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>Категория</label>
+                        <select id="filterCategory" onchange="filterOperations()">
+                            <option value="">Все</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>Тип</label>
+                        <select id="filterType" onchange="filterOperations()">
+                            <option value="">Все</option>
+                            <option value="expense">Расходы</option>
+                            <option value="income">Приходы</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 150px; display: flex; align-items: flex-end;">
+                        <button class="btn btn-primary" style="width: 100%;" onclick="exportToExcel()">📥 Excel</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Сортировка:</span>
+                    <button class="btn btn-secondary btn-small" onclick="setSortOrder('date-desc')">📅 Новые</button>
+                    <button class="btn btn-secondary btn-small" onclick="setSortOrder('date-asc')">📅 Старые</button>
+                    <button class="btn btn-secondary btn-small" onclick="setSortOrder('amount-desc')">💰 Больше</button>
+                    <button class="btn btn-secondary btn-small" onclick="setSortOrder('amount-asc')">💰 Меньше</button>
+                </div>
+
+                <div id="historyList" class="operations-list"></div>
+            </div>
+        </div>
+
+        <!-- Analytics -->
+        <div id="analytics" class="tab-content">
+            <div class="section">
+                <div class="section-title">Расходы по категориям</div>
+                <div id="expenseStats" class="analytics-grid"></div>
+            </div>
+            <div class="section">
+                <div class="section-title">Приходы по категориям</div>
+                <div id="incomeStats" class="analytics-grid"></div>
+            </div>
+            <div class="section">
+                <div class="section-title">По дням (последние 7 дней)</div>
+                <div id="dailyStats" class="analytics-grid"></div>
+            </div>
+        </div>
+
+        <!-- Converter -->
+        <div id="converter" class="tab-content">
+            <div class="section">
+                <div class="section-title">💱 Конвертер валют</div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Курс USD → SUM</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="exchangeRate" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this); updateConverter()" style="flex: 1;">
+                        <button class="btn btn-secondary btn-small" onclick="resetExchangeRate()">Сброс</button>
+                    </div>
+                </div>
+
+                <div class="converter-grid">
+                    <div class="converter-item">
+                        <div class="converter-label">USD → SUM</div>
+                        <input type="text" id="converterUSD" placeholder="USD" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="convertUSDtoSUM()" class="converter-input">
+                        <div class="converter-value" id="converterResult">0</div>
+                    </div>
+                    <div class="converter-item">
+                        <div class="converter-label">SUM → USD</div>
+                        <input type="text" id="converterSUM" placeholder="SUM" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="convertSUMtoUSD()" class="converter-input">
+                        <div class="converter-value" id="converterResultReverse">0</div>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin-top: 20px;">
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">📊 Текущий курс:</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);">1 USD = <span id="currentRate">-</span> SUM</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🔄 Перевод между кассами</div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Из кассы</label>
+                        <select id="transferFromCash">
+                            <option>Выбрать</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>В кассу</label>
+                        <select id="transferToCash">
+                            <option>Выбрать</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Сумма</label>
+                        <input type="text" id="transferAmount" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Валюта</label>
+                        <select id="transferCurrency">
+                            <option value="SUM">SUM</option>
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="transferBetweenCashes()">Перевести</button>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div id="settings" class="tab-content">
+            <div class="settings-grid">
+                <div class="section">
+                    <div class="settings-title">🎨 Оформление</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Тема</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Светлая или темная</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" id="lightThemeBtn" onclick="setTheme('light')" style="padding: 10px 16px; font-size: 13px;">🌞</button>
+                            <button class="btn btn-secondary" id="darkThemeBtn" onclick="setTheme('dark')" style="padding: 10px 16px; font-size: 13px;">🌙</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="settings-title">💰 Начальный остаток на кассе</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Касса</label>
+                            <select id="initialBalanceCash" onchange="updateInitialBalanceDisplay()">
+                                <option value="cash_nalichnye">💵 Наличные</option>
+                                <option value="cash_beznalichnye">🏦 Безналичные</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Начальный остаток SUM</label>
+                            <input type="text" id="initialSumInput" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
+                        </div>
+                        <div class="form-group">
+                            <label>Начальный остаток USD</label>
+                            <input type="text" id="initialUsdInput" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="saveInitialBalance()">Сохранить остаток</button>
+                </div>
+
+                <div class="section">
+                    <div class="settings-title">☁️ Google Apps Script</div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>ID Таблицы</label>
+                        <textarea id="sheetId" placeholder="ID" style="height: 60px;"></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label>Deployment URL</label>
+                        <textarea id="deployUrl" placeholder="URL" style="height: 60px;"></textarea>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="setupGoogleAppsScript()">🔗 Синхронизировать</button>
+                </div>
+
+                <div class="section">
+                    <div class="settings-title">🏷️ Категории расходов</div>
+                    <div class="category-input">
+                        <input type="text" id="expenseCategoryInput" placeholder="Новая категория">
+                        <button class="btn btn-primary btn-small" onclick="addExpenseCategory()">+</button>
+                    </div>
+                    <div class="category-list" id="expenseCategoryList"></div>
+                </div>
+
+                <div class="section">
+                    <div class="settings-title">🏷️ Категории приходов</div>
+                    <div class="category-input">
+                        <input type="text" id="incomeCategoryInput" placeholder="Новая категория">
+                        <button class="btn btn-primary btn-small" onclick="addIncomeCategory()">+</button>
+                    </div>
+                    <div class="category-list" id="incomeCategoryList"></div>
+                </div>
+
+                <div class="section">
+                    <div class="settings-title">⚙️ Резервная копия</div>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="exportAllData()">📥 Загрузить</button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;" onclick="document.getElementById('importInput').click()">📤 Загрузить копию</button>
+                    <input type="file" id="importInput" style="display: none;" accept=".json" onchange="importData(event)">
+                    <button class="btn btn-danger" style="width: 100%;" onclick="clearAllData()">Очистить данные</button>
+                </div>
+            </div>
+        </div>
+    <div id="adjustBalance" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">🔧 Корректировка баланса</div>
+            <button class="close-btn" onclick="closeModal('adjustBalance')">✕</button>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label>Касса</label>
+                <select id="adjustBalanceCash" onchange="updateAdjustSummary()">
+                    <option value="cash_nalichnye">💵 Наличные</option>
+                    <option value="cash_beznalichnye">🏦 Безналичные</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label>Фактический SUM</label>
+                <input type="text" id="actualBalanceSUM" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this); updateAdjustSummary()">
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label>Фактический USD</label>
+                <input type="text" id="actualBalanceUSD" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this); updateAdjustSummary()">
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label>Дата корректировки</label>
+                <input type="datetime-local" id="adjustDate">
+            </div>
+            <div id="adjustSummary" style="background: var(--bg); padding: 16px; border-radius: 10px; margin-bottom: 20px; display: none;">
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">Будет создано:</div>
+                <div id="adjustSummaryText" style="font-size: 13px; line-height: 1.6; color: var(--text-primary);"></div>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('adjustBalance')">Отмена</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="applyBalanceAdjustment()">Применить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Details Modal -->
+    <div id="categoryDetails" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">📊 Детали категории</div>
+            <button class="close-btn" onclick="closeModal('categoryDetails')">✕</button>
+            <div id="categoryDetailsContent"></div>
+        </div>
+    </div>
+
+    <!-- Edit Operation Modal -->
+    <div id="editOperation" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">✏️ Редактирование операции</div>
+            <button class="close-btn" onclick="closeModal('editOperation')">✕</button>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Тип</label>
+                    <select id="editOperationType" onchange="updateEditCategorySelect()">
+                        <option value="expense">Расход</option>
+                        <option value="income">Приход</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Категория</label>
+                    <select id="editCategory"></select>
+                </div>
+                <div class="form-group">
+                    <label>Сумма</label>
+                    <input type="text" id="editAmount" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
+                </div>
+                <div class="form-group">
+                    <label>Валюта</label>
+                    <select id="editCurrency">
+                        <option value="SUM">SUM</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Дата и время</label>
+                    <input type="datetime-local" id="editDateTime">
+                </div>
+                <div class="form-group">
+                    <label>Описание</label>
+                    <input type="text" id="editDescription" placeholder="Заметка">
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('editOperation')">Отмена</button>
+                <button class="btn btn-danger" style="flex: 1;" onclick="deleteEditingOperation()">Удалить</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveEditOperation()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Modal -->
+    <div id="templatesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">⭐ Шаблоны операций</div>
+            <button class="close-btn" onclick="closeModal('templatesModal')">✕</button>
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">Мои шаблоны:</div>
+                <div id="templatesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+            <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">Создать новый:</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Тип</label>
+                        <select id="templateType" onchange="updateTemplateCategorySelect()">
+                            <option value="expense">Расход</option>
+                            <option value="income">Приход</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <select id="templateCategory"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Сумма</label>
+                        <input type="text" id="templateAmount" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
+                    </div>
+                    <div class="form-group">
+                        <label>Валюта</label>
+                        <select id="templateCurrency">
+                            <option value="SUM">SUM</option>
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>Название шаблона</label>
+                    <input type="text" id="templateName" placeholder="Например: Зарплата или Электричество">
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="createTemplate()">Создать шаблон</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange Currency Modal -->
+    <div id="exchangeModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-title">💱 Обменять валюту</div>
+            <button class="close-btn" onclick="closeModal('exchangeModal')">✕</button>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Касса</label>
+                <select id="exchangeCash" onchange="updateExchangeBalance()" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-top: 8px; font-size: 14px;">
+                    <option>Выбрать</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                <!-- Отдаешь (левая сторона) -->
+                <div style="background: var(--bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border);">
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 8px; text-transform: uppercase;">Отдаешь</label>
+                    
+                    <select id="exchangeFrom" onchange="updateExchangeFullUI()" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; font-size: 14px; font-weight: 600;">
+                        <option value="USD">USD 💵</option>
+                        <option value="SUM">SUM 💰</option>
+                    </select>
+
+                    <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 8px;">
+                        Остаток: <span id="exchangeFromBalance" style="font-weight: 600; color: var(--text-secondary);">0</span> <span id="exchangeFromCurr">USD</span>
+                    </div>
+
+                    <input type="text" id="exchangeAmount" placeholder="Сумма" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this); updateExchangeCalculate()" style="width: 100%; padding: 12px; border: 1px solid var(--primary); border-radius: 8px; font-size: 16px; font-weight: 700;">
+                </div>
+
+                <!-- Получишь (правая сторона) -->
+                <div style="background: var(--bg); padding: 16px; border-radius: 12px; border: 1px solid var(--primary-light);">
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 8px; text-transform: uppercase;">Получишь</label>
+                    
+                    <div style="padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; font-size: 14px; font-weight: 600;">
+                        <span id="exchangeToCurr">SUM</span>
+                    </div>
+
+                    <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 8px; visibility: hidden;">
+                        x
+                    </div>
+
+                    <input type="text" id="exchangeResultInput" placeholder="Результат" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this); updateExchangeRateFromResult()" style="width: 100%; padding: 12px; border: 1px solid var(--primary); border-radius: 8px; font-size: 16px; font-weight: 700;">
+                </div>
+            </div>
+
+            <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 12px; text-transform: uppercase;">Курс USD → SUM</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="exchangeRateInput" placeholder="12000" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this); updateExchangeCalculate()" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-weight: 600;">
+                    <button class="btn btn-secondary btn-small" onclick="resetExchangeRateModal()" style="padding: 8px 12px;">Сброс</button>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('exchangeModal')">Отмена</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="executeExchange()">Обменять</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="switchTab('add')" title="Добавить операцию">➕</button>
+    </div> <!-- container -->
+
+    <script src="script.js"></script>
+</body>
+</html>
