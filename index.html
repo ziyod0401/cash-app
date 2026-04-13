@@ -1,11 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Учёт Кассы - LLC PRO BIO FOODS</title>
+    <title>Касса - LLC PRO BIO FOODS</title>
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,144 +14,166 @@
         }
 
         :root {
-            --bg-primary: #0f0f0f;
-            --bg-secondary: #1a1a1a;
-            --bg-tertiary: #252525;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --border: #333333;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
-            --accent-yellow: #f59e0b;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --bg-secondary: #ffffff;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        :root.dark-mode {
+            --bg: #0f172a;
+            --bg-secondary: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-primary);
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             color: var(--text-primary);
             line-height: 1.6;
-            overflow-x: hidden;
+            transition: background 0.3s ease;
+        }
+
+        :root.dark-mode body {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 24px;
         }
 
         header {
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 20px;
+            margin-bottom: 40px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            gap: 20px;
+            align-items: center;
+            gap: 24px;
+            background: var(--bg-secondary);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
         }
 
-        .header-left h1 {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 5px;
-            letter-spacing: -0.5px;
+        .header-content h1 {
+            font-family: 'Sora', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .header-subtitle {
+            font-size: 14px;
             color: var(--text-secondary);
-            font-size: 13px;
         }
 
-        .sync-status {
+        .sync-badge {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 12px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            white-space: nowrap;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #0369a1;
         }
 
-        .sync-status.connected {
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-        }
-
-        .sync-status.error {
-            border-color: var(--accent-red);
-            color: var(--accent-red);
-        }
-
-        .sync-indicator {
+        .sync-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--text-secondary);
+            background: var(--success);
             animation: pulse 2s infinite;
         }
 
-        .sync-status.connected .sync-indicator {
-            background: var(--accent-green);
+        .sync-badge.error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #fecaca;
+            color: #dc2626;
         }
 
-        .sync-status.error .sync-indicator {
-            background: var(--accent-red);
+        .sync-badge.error .sync-dot {
+            background: var(--danger);
             animation: none;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.6; }
         }
 
         .tabs {
             display: flex;
-            gap: 2px;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border);
+            gap: 0;
+            margin-bottom: 32px;
+            border-bottom: 2px solid var(--border);
             overflow-x: auto;
         }
 
         .tab-btn {
-            padding: 12px 24px;
-            background: transparent;
+            padding: 14px 24px;
+            background: none;
             border: none;
             color: var(--text-secondary);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 500;
             border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
             transition: all 0.3s ease;
-            position: relative;
-            bottom: -1px;
             white-space: nowrap;
-        }
-
-        .tab-btn.active {
-            color: var(--text-primary);
-            border-bottom-color: var(--accent-blue);
+            position: relative;
         }
 
         .tab-btn:hover {
             color: var(--text-primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
         }
 
         .tab-content {
             display: none;
+            animation: fadeIn 0.3s ease;
         }
 
         .tab-content.active {
             display: block;
-            animation: fadeIn 0.3s ease;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(5px);
             }
             to {
                 opacity: 1;
@@ -159,72 +181,90 @@
             }
         }
 
-        /* Dashboard */
+        /* Dashboard Grid */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
         }
 
-        .card {
+        .stat-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
             transition: all 0.3s ease;
+            cursor: pointer;
         }
 
-        .card:hover {
-            border-color: var(--accent-blue);
-            background: var(--bg-tertiary);
+        .stat-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
         }
 
-        .card-label {
+        .stat-card.income {
+            border-top: 3px solid var(--success);
+        }
+
+        .stat-card.expense {
+            border-top: 3px solid var(--danger);
+        }
+
+        .stat-card.balance {
+            border-top: 3px solid var(--primary);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            font-weight: 600;
             color: var(--text-secondary);
-            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 8px;
-            font-weight: 600;
+            margin-bottom: 12px;
         }
 
-        .card-value {
-            font-size: 24px;
+        .stat-value {
+            font-family: 'Sora', sans-serif;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 4px;
-            letter-spacing: -1px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
         }
 
-        .card-sub {
-            color: var(--text-secondary);
-            font-size: 11px;
-            line-height: 1.4;
+        .stat-sub {
+            font-size: 12px;
+            color: var(--text-tertiary);
         }
 
-        /* Forms */
-        .form-section {
+        /* Cards & Sections */
+        .section {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 30px;
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
         }
 
-        .form-title {
-            font-size: 16px;
-            font-weight: 600;
+        .section-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--text-primary);
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .form-group {
@@ -232,63 +272,67 @@
             flex-direction: column;
         }
 
-        label {
+        .form-group label {
             font-size: 13px;
+            font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 6px;
-            font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
-        input, select, textarea {
-            padding: 10px 12px;
-            background: var(--bg-primary);
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 14px;
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
             color: var(--text-primary);
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
+            background: var(--bg);
         }
 
-        input:focus, select:focus, textarea:focus {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
-            border-color: var(--accent-blue);
-            background: var(--bg-tertiary);
+            border-color: var(--primary);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
+        /* Buttons */
         .btn {
-            padding: 10px 20px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .btn-primary {
-            background: var(--accent-blue);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
+            box-shadow: var(--shadow-md);
         }
 
-        .btn-primary:hover:not(:disabled) {
-            background: #2563eb;
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+            box-shadow: var(--shadow-lg);
         }
 
-        .btn-primary:disabled {
-            background: #1e40af;
-            cursor: not-allowed;
-            opacity: 0.6;
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
         .btn-secondary {
-            background: var(--bg-tertiary);
+            background: var(--bg);
             color: var(--text-primary);
             border: 1px solid var(--border);
         }
@@ -298,35 +342,34 @@
         }
 
         .btn-danger {
-            background: var(--accent-red);
-            color: white;
-            padding: 10px 16px;
-            font-size: 13px;
+            background: #fee2e2;
+            color: var(--danger);
+            padding: 8px 12px;
+            font-size: 12px;
         }
 
         .btn-danger:hover {
-            background: #dc2626;
+            background: #fecaca;
         }
 
         .btn-small {
-            padding: 6px 12px;
+            padding: 8px 16px;
             font-size: 12px;
         }
 
         .form-row {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             justify-content: flex-end;
             margin-top: 20px;
             flex-wrap: wrap;
         }
 
-        /* Tables & Lists */
+        /* Operations List */
         .operations-list {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .operation-item {
@@ -334,25 +377,21 @@
             justify-content: space-between;
             align-items: center;
             padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            transition: all 0.2s;
-        }
-
-        .operation-item:last-child {
-            border-bottom: none;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
         }
 
         .operation-item:hover {
-            background: var(--bg-tertiary);
+            border-color: var(--primary-light);
+            background: rgba(99, 102, 241, 0.02);
         }
 
-        .operation-left {
-            flex: 1;
-        }
-
-        .operation-category {
+        .operation-info h4 {
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
+            color: var(--text-primary);
             margin-bottom: 4px;
         }
 
@@ -360,114 +399,98 @@
             font-size: 12px;
             color: var(--text-secondary);
             display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .operation-right {
-            text-align: right;
-            display: flex;
-            align-items: center;
             gap: 12px;
             flex-wrap: wrap;
-            justify-content: flex-end;
         }
 
         .operation-amount {
             font-size: 16px;
-            font-weight: 600;
-            min-width: 100px;
+            font-weight: 700;
+            min-width: 120px;
+            text-align: right;
         }
 
         .operation-amount.income {
-            color: var(--accent-green);
+            color: var(--success);
         }
 
         .operation-amount.expense {
-            color: var(--accent-red);
+            color: var(--danger);
         }
 
         /* Analytics */
-        .chart-container {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 30px;
-        }
-
-        .chart-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        .category-stats {
+        .analytics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
         }
 
-        .stat-item {
-            background: var(--bg-primary);
+        .analytics-item {
+            background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .stat-label {
+        .analytics-item:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .analytics-label {
             font-size: 12px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .stat-value {
-            font-size: 18px;
             font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
         }
 
-        .stat-badge {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 4px 8px;
-            background: var(--bg-tertiary);
-            border-radius: 4px;
-            font-size: 11px;
-            color: var(--text-secondary);
+        .analytics-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .analytics-sub {
+            font-size: 12px;
+            color: var(--text-tertiary);
         }
 
         /* Settings */
         .settings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
             gap: 24px;
         }
 
-        .settings-section {
-            background: var(--bg-secondary);
+        .settings-card {
+            background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
         }
 
         .settings-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: var(--text-secondary);
+            margin-bottom: 16px;
         }
 
-        .category-input-group {
+        .category-input {
             display: flex;
             gap: 8px;
             margin-bottom: 12px;
         }
 
-        .category-input-group input {
+        .category-input input {
             flex: 1;
         }
 
@@ -478,16 +501,27 @@
             margin-top: 12px;
         }
 
-        .category-tag {
-            display: flex;
+        .category-badge {
+            display: inline-flex;
             align-items: center;
             gap: 6px;
             padding: 6px 12px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 12px;
+            color: #0369a1;
             animation: slideIn 0.3s ease;
+        }
+
+        .category-badge .remove {
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .category-badge .remove:hover {
+            color: var(--danger);
         }
 
         @keyframes slideIn {
@@ -501,13 +535,6 @@
             }
         }
 
-        .category-tag .remove {
-            cursor: pointer;
-            color: var(--accent-red);
-            font-weight: bold;
-            line-height: 1;
-        }
-
         /* Empty State */
         .empty-state {
             text-align: center;
@@ -515,55 +542,18 @@
             color: var(--text-secondary);
         }
 
-        .empty-state-icon {
+        .empty-icon {
             font-size: 48px;
             margin-bottom: 16px;
         }
 
-        .empty-state-title {
+        .empty-title {
             font-size: 16px;
             font-weight: 600;
-            margin-bottom: 8px;
             color: var(--text-primary);
         }
 
-        .info-box {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .success-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--accent-green);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 6px;
-            animation: slideIn 0.3s ease;
-            z-index: 2000;
-            max-width: 300px;
-        }
-
-        .error-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--accent-red);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 6px;
-            animation: slideIn 0.3s ease;
-            z-index: 2000;
-            max-width: 300px;
-        }
-
+        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -571,10 +561,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(4px);
             z-index: 3000;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .modal.active {
@@ -584,20 +576,21 @@
         .modal-content {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
+            border-radius: 16px;
+            padding: 32px;
             max-width: 500px;
-            width: 90%;
+            width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.3s ease;
+            box-shadow: var(--shadow-xl);
             position: relative;
+            animation: slideUp 0.3s ease;
         }
 
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -606,53 +599,116 @@
         }
 
         .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
+            font-family: 'Sora', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-primary);
         }
 
-        .close-modal {
+        .close-btn {
             position: absolute;
             top: 16px;
             right: 16px;
             background: none;
             border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
             font-size: 24px;
-            width: 32px;
-            height: 32px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* Messages */
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+            max-width: 300px;
+        }
+
+        .message.success {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #15803d;
+            border: 1px solid #86efac;
+        }
+
+        .message.error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border: 1px solid #fca5a5;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .container {
-                padding: 12px;
+                padding: 16px;
             }
 
             header {
                 flex-direction: column;
+                align-items: flex-start;
+                padding: 24px;
             }
 
-            h1 {
-                font-size: 22px;
+            .header-content h1 {
+                font-size: 24px;
             }
 
             .dashboard-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+                gap: 16px;
             }
 
-            .card {
+            .stat-card {
                 padding: 16px;
             }
 
-            .card-value {
-                font-size: 20px;
+            .stat-value {
+                font-size: 22px;
             }
 
-            .tabs {
-                flex-wrap: wrap;
+            .section {
+                padding: 20px;
             }
 
             .form-grid {
@@ -664,101 +720,116 @@
                 align-items: flex-start;
             }
 
-            .operation-right {
+            .operation-amount {
                 width: 100%;
-                justify-content: space-between;
-                margin-top: 10px;
+                text-align: left;
+                margin-top: 8px;
             }
 
             .settings-grid {
                 grid-template-columns: 1fr;
             }
 
-            .form-row {
-                flex-direction: column;
+            .fab {
+                bottom: 20px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+                font-size: 24px;
             }
 
-            .btn {
-                width: 100%;
+            .modal-content {
+                padding: 24px;
+                border-radius: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content h1 {
+                font-size: 20px;
+            }
+
+            .stat-value {
+                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Header -->
         <header>
-            <div class="header-left">
-                <h1>📊 Касса</h1>
+            <div class="header-content">
+                <h1>Касса</h1>
                 <div class="header-subtitle">LLC PRO BIO FOODS</div>
             </div>
-            <div class="sync-status" id="syncStatus">
-                <div class="sync-indicator"></div>
+            <div class="sync-badge" id="syncStatus">
+                <div class="sync-dot"></div>
                 <span id="syncText">Не настроено</span>
             </div>
         </header>
 
+        <!-- Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('dashboard')">Панель</button>
-            <button class="tab-btn" onclick="switchTab('add')">+ Операция</button>
-            <button class="tab-btn" onclick="switchTab('history')">История</button>
-            <button class="tab-btn" onclick="switchTab('analytics')">Аналитика</button>
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Панель</button>
+            <button class="tab-btn" onclick="switchTab('add')">➕ Операция</button>
+            <button class="tab-btn" onclick="switchTab('history')">📋 История</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">📈 Аналитика</button>
             <button class="tab-btn" onclick="switchTab('settings')">⚙️ Настройки</button>
         </div>
 
-        <!-- DASHBOARD TAB -->
+        <!-- Dashboard -->
         <div id="dashboard" class="tab-content active">
             <div class="dashboard-grid">
-                <div class="card">
-                    <div class="card-label">💰 Остаток SUM</div>
-                    <div class="card-value" id="balanceSUM">0</div>
-                    <div class="card-sub" id="balanceSUMDetail"></div>
+                <div class="stat-card balance">
+                    <div class="stat-label">💰 Остаток SUM</div>
+                    <div class="stat-value" id="balanceSUM">0</div>
+                    <div class="stat-sub">Всего в кассе</div>
                 </div>
-
-                <div class="card">
-                    <div class="card-label">💵 Остаток USD</div>
-                    <div class="card-value" id="balanceUSD">0</div>
-                    <div class="card-sub" id="balanceUSDDetail"></div>
+                <div class="stat-card balance">
+                    <div class="stat-label">💵 Остаток USD</div>
+                    <div class="stat-value" id="balanceUSD">0</div>
+                    <div class="stat-sub">Всего в кассе</div>
                 </div>
-
-                <div class="card">
-                    <div class="card-label">➕ Приход SUM</div>
-                    <div class="card-value" id="incomeTodaySUM" style="color: var(--accent-green);">0</div>
-                    <div class="card-sub" id="incomeTodaySUMDetail"></div>
+                <div class="stat-card income">
+                    <div class="stat-label">➕ Приход SUM</div>
+                    <div class="stat-value" id="incomeTodaySUM" style="color: var(--success);">0</div>
+                    <div class="stat-sub">За сегодня</div>
                 </div>
-
-                <div class="card">
-                    <div class="card-label">➕ Приход USD</div>
-                    <div class="card-value" id="incomeTodayUSD" style="color: var(--accent-green);">0</div>
-                    <div class="card-sub" id="incomeTodayUSDDetail"></div>
+                <div class="stat-card income">
+                    <div class="stat-label">➕ Приход USD</div>
+                    <div class="stat-value" id="incomeTodayUSD" style="color: var(--success);">0</div>
+                    <div class="stat-sub">За сегодня</div>
                 </div>
-
-                <div class="card">
-                    <div class="card-label">➖ Расход SUM</div>
-                    <div class="card-value" id="expenseTodaySUM" style="color: var(--accent-red);">0</div>
-                    <div class="card-sub" id="expenseTodaySUMDetail"></div>
+                <div class="stat-card expense">
+                    <div class="stat-label">➖ Расход SUM</div>
+                    <div class="stat-value" id="expenseTodaySUM" style="color: var(--danger);">0</div>
+                    <div class="stat-sub">За сегодня</div>
                 </div>
-
-                <div class="card">
-                    <div class="card-label">➖ Расход USD</div>
-                    <div class="card-value" id="expenseTodayUSD" style="color: var(--accent-red);">0</div>
-                    <div class="card-sub" id="expenseTodayUSDDetail"></div>
+                <div class="stat-card expense">
+                    <div class="stat-label">➖ Расход USD</div>
+                    <div class="stat-value" id="expenseTodayUSD" style="color: var(--danger);">0</div>
+                    <div class="stat-sub">За сегодня</div>
                 </div>
             </div>
 
-            <div class="form-section">
-                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
-                    <div class="form-title" style="margin: 0;">📈 Последние операции</div>
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div class="section-title">📈 Последние операции</div>
                     <button class="btn btn-primary btn-small" onclick="openModal('adjustBalance')">🔧 Корректировка</button>
                 </div>
                 <div id="recentOps" class="operations-list"></div>
             </div>
         </div>
 
-        <!-- ADD OPERATION TAB -->
+        <!-- Add Operation -->
         <div id="add" class="tab-content">
-            <div class="form-section">
-                <div class="form-title">➕ Добавить операцию</div>
-                
+            <div class="section">
+                <div class="section-title">Добавить операцию</div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Тип</label>
@@ -767,19 +838,16 @@
                             <option value="income">Приход</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label>Категория</label>
                         <select id="category">
                             <option>Выбрать</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label>Сумма</label>
-                        <input type="number" id="amount" placeholder="0" step="0.01" min="0" inputmode="decimal">
+                        <input type="text" id="amount" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
                     </div>
-
                     <div class="form-group">
                         <label>Валюта</label>
                         <select id="currency">
@@ -787,18 +855,15 @@
                             <option value="USD">USD</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label>Дата и время</label>
                         <input type="datetime-local" id="dateTime">
                     </div>
-
                     <div class="form-group">
                         <label>Описание</label>
                         <input type="text" id="description" placeholder="Заметка">
                     </div>
                 </div>
-
                 <div class="form-row">
                     <button class="btn btn-secondary" onclick="resetForm()">Очистить</button>
                     <button class="btn btn-primary" onclick="addOperation()">Добавить</button>
@@ -806,17 +871,17 @@
             </div>
         </div>
 
-        <!-- HISTORY TAB -->
+        <!-- History -->
         <div id="history" class="tab-content">
-            <div class="form-section" style="margin-bottom: 20px;">
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <div class="form-group" style="flex: 1; min-width: 150px;">
+            <div class="section">
+                <div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 160px;">
                         <label>Категория</label>
                         <select id="filterCategory" onchange="filterOperations()">
                             <option value="">Все</option>
                         </select>
                     </div>
-                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                    <div class="form-group" style="flex: 1; min-width: 160px;">
                         <label>Тип</label>
                         <select id="filterType" onchange="filterOperations()">
                             <option value="">Все</option>
@@ -824,125 +889,128 @@
                             <option value="income">Приходы</option>
                         </select>
                     </div>
-                    <div style="flex: 1; min-width: 150px; display: flex; align-items: flex-end;">
+                    <div style="flex: 1; min-width: 160px; display: flex; align-items: flex-end;">
                         <button class="btn btn-primary" style="width: 100%;" onclick="exportToExcel()">📥 Excel</button>
                     </div>
                 </div>
+                <div id="historyList" class="operations-list"></div>
             </div>
-
-            <div id="historyList" class="operations-list"></div>
         </div>
 
-        <!-- ANALYTICS TAB -->
+        <!-- Analytics -->
         <div id="analytics" class="tab-content">
-            <div class="chart-container">
-                <div class="chart-title">📊 Расходы по категориям</div>
-                <div id="expenseStats" class="category-stats"></div>
+            <div class="section">
+                <div class="section-title">Расходы по категориям</div>
+                <div id="expenseStats" class="analytics-grid"></div>
             </div>
-
-            <div class="chart-container">
-                <div class="chart-title">📊 Приходы по категориям</div>
-                <div id="incomeStats" class="category-stats"></div>
+            <div class="section">
+                <div class="section-title">Приходы по категориям</div>
+                <div id="incomeStats" class="analytics-grid"></div>
             </div>
-
-            <div class="chart-container">
-                <div class="chart-title">📅 По дням (последние 7 дней)</div>
-                <div id="dailyStats" class="category-stats"></div>
+            <div class="section">
+                <div class="section-title">По дням (последние 7 дней)</div>
+                <div id="dailyStats" class="analytics-grid"></div>
             </div>
         </div>
 
-        <!-- SETTINGS TAB -->
+        <!-- Settings -->
         <div id="settings" class="tab-content">
             <div class="settings-grid">
-                <div class="settings-section">
-                    <div class="settings-title">☁️ Google Apps Script</div>
-                    
-                    <div class="info-box">
-                        Инструкция: SETUP_GOOGLE_APPS_SCRIPT.md
+                <div class="section">
+                    <div class="settings-title">🎨 Оформление</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Тема</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Светлая или темная</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" id="lightThemeBtn" onclick="setTheme('light')" style="padding: 10px 16px; font-size: 13px;">🌞</button>
+                            <button class="btn btn-secondary" id="darkThemeBtn" onclick="setTheme('dark')" style="padding: 10px 16px; font-size: 13px;">🌙</button>
+                        </div>
                     </div>
+                </div>
 
+                <div class="section">
+                    <div class="settings-title">☁️ Google Apps Script</div>
                     <div class="form-group" style="margin-bottom: 12px;">
                         <label>ID Таблицы</label>
-                        <textarea id="sheetId" placeholder="ID" rows="2" style="font-size: 12px;"></textarea>
+                        <textarea id="sheetId" placeholder="ID" style="height: 60px;"></textarea>
                     </div>
-
                     <div class="form-group" style="margin-bottom: 16px;">
                         <label>Deployment URL</label>
-                        <textarea id="deployUrl" placeholder="URL" rows="2" style="font-size: 12px;"></textarea>
+                        <textarea id="deployUrl" placeholder="URL" style="height: 60px;"></textarea>
                     </div>
-
                     <button class="btn btn-primary" style="width: 100%;" onclick="setupGoogleAppsScript()">🔗 Синхронизировать</button>
                 </div>
 
-                <div class="settings-section">
+                <div class="section">
                     <div class="settings-title">🏷️ Категории расходов</div>
-                    
-                    <div class="category-input-group">
-                        <input type="text" id="expenseCategoryInput" placeholder="Категория">
+                    <div class="category-input">
+                        <input type="text" id="expenseCategoryInput" placeholder="Новая категория">
                         <button class="btn btn-primary btn-small" onclick="addExpenseCategory()">+</button>
                     </div>
-
                     <div class="category-list" id="expenseCategoryList"></div>
                 </div>
 
-                <div class="settings-section">
+                <div class="section">
                     <div class="settings-title">🏷️ Категории приходов</div>
-                    
-                    <div class="category-input-group">
-                        <input type="text" id="incomeCategoryInput" placeholder="Категория">
+                    <div class="category-input">
+                        <input type="text" id="incomeCategoryInput" placeholder="Новая категория">
                         <button class="btn btn-primary btn-small" onclick="addIncomeCategory()">+</button>
                     </div>
-
                     <div class="category-list" id="incomeCategoryList"></div>
                 </div>
 
-                <div class="settings-section">
+                <div class="section">
                     <div class="settings-title">⚙️ Резервная копия</div>
-                    
                     <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="exportAllData()">📥 Загрузить</button>
-                    
                     <button class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;" onclick="document.getElementById('importInput').click()">📤 Загрузить копию</button>
-
                     <input type="file" id="importInput" style="display: none;" accept=".json" onchange="importData(event)">
-
                     <button class="btn btn-danger" style="width: 100%;" onclick="clearAllData()">Очистить данные</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- BALANCE ADJUSTMENT MODAL -->
+    <!-- Balance Adjustment Modal -->
     <div id="adjustBalance" class="modal">
         <div class="modal-content">
             <div class="modal-title">🔧 Корректировка баланса</div>
-            <button class="close-modal" onclick="closeModal('adjustBalance')">✕</button>
-
+            <button class="close-btn" onclick="closeModal('adjustBalance')">✕</button>
             <div class="form-group" style="margin-bottom: 16px;">
                 <label>Фактический SUM</label>
-                <input type="number" id="actualBalanceSUM" placeholder="0" step="0.01" inputmode="decimal">
+                <input type="text" id="actualBalanceSUM" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
             </div>
-
             <div class="form-group" style="margin-bottom: 16px;">
                 <label>Фактический USD</label>
-                <input type="number" id="actualBalanceUSD" placeholder="0" step="0.01" inputmode="decimal">
+                <input type="text" id="actualBalanceUSD" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
             </div>
-
             <div class="form-group" style="margin-bottom: 20px;">
                 <label>Дата корректировки</label>
                 <input type="datetime-local" id="adjustDate">
             </div>
-
-            <div id="adjustSummary" style="background: var(--bg-primary); padding: 16px; border-radius: 6px; margin-bottom: 20px; display: none;">
-                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Будет создано:</div>
-                <div id="adjustSummaryText" style="font-size: 12px; line-height: 1.6;"></div>
+            <div id="adjustSummary" style="background: var(--bg); padding: 16px; border-radius: 10px; margin-bottom: 20px; display: none;">
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">Будет создано:</div>
+                <div id="adjustSummaryText" style="font-size: 13px; line-height: 1.6; color: var(--text-primary);"></div>
             </div>
-
             <div style="display: flex; gap: 12px;">
                 <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('adjustBalance')">Отмена</button>
                 <button class="btn btn-primary" style="flex: 1;" onclick="applyBalanceAdjustment()">Применить</button>
             </div>
         </div>
     </div>
+
+    <!-- Category Details Modal -->
+    <div id="categoryDetails" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">📊 Детали категории</div>
+            <button class="close-btn" onclick="closeModal('categoryDetails')">✕</button>
+            <div id="categoryDetailsContent"></div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="switchTab('add')" title="Добавить операцию">➕</button>
 
     <script>
         let appData = {
@@ -956,7 +1024,6 @@
         };
 
         let isSynced = false;
-        let lastSync = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
@@ -968,17 +1035,56 @@
             checkGoogleAppsScriptConnection();
             setInterval(checkGoogleAppsScriptConnection, 30000);
             setInterval(autoSync, 10000);
+            document.querySelector('.fab').style.display = 'flex';
+            
+            // Инициализация темы
+            initTheme();
         });
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('darkThemeBtn').style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)';
+                document.getElementById('darkThemeBtn').style.color = 'white';
+                document.getElementById('darkThemeBtn').style.border = 'none';
+                document.getElementById('lightThemeBtn').style.background = 'var(--bg)';
+                document.getElementById('lightThemeBtn').style.color = 'var(--text-primary)';
+                document.getElementById('lightThemeBtn').style.border = '1px solid var(--border)';
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('lightThemeBtn').style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)';
+                document.getElementById('lightThemeBtn').style.color = 'white';
+                document.getElementById('lightThemeBtn').style.border = 'none';
+                document.getElementById('darkThemeBtn').style.background = 'var(--bg)';
+                document.getElementById('darkThemeBtn').style.color = 'var(--text-primary)';
+                document.getElementById('darkThemeBtn').style.border = '1px solid var(--border)';
+            }
+        }
 
         function loadData() {
             const saved = localStorage.getItem('cashAppData');
-            if (saved) {
-                appData = JSON.parse(saved);
-            }
+            if (saved) appData = JSON.parse(saved);
         }
 
         function saveData() {
             localStorage.setItem('cashAppData', JSON.stringify(appData));
+        }
+
+        function formatAmountInput(input) {
+            let value = input.value.replace(/\s/g, '');
+            value = value.replace(/[^\d.]/g, '');
+            let parts = value.split('.');
+            if (parts.length > 2) value = parts[0] + '.' + parts[1];
+            let [intPart, decPart] = value.split('.');
+            intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            input.value = decPart !== undefined ? intPart + '.' + decPart : intPart;
         }
 
         function setDefaultDateTime() {
@@ -988,8 +1094,9 @@
             const day = String(now.getDate()).padStart(2, '0');
             const hour = String(now.getHours()).padStart(2, '0');
             const minute = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('dateTime').value = `${year}-${month}-${day}T${hour}:${minute}`;
-            document.getElementById('adjustDate').value = `${year}-${month}-${day}T${hour}:${minute}`;
+            const iso = `${year}-${month}-${day}T${hour}:${minute}`;
+            document.getElementById('dateTime').value = iso;
+            document.getElementById('adjustDate').value = iso;
         }
 
         function switchTab(tabName) {
@@ -997,27 +1104,153 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
+            const fab = document.querySelector('.fab');
+            fab.style.display = tabName === 'dashboard' ? 'flex' : 'none';
             updateDashboard();
+            
+            // Обновляем состояние кнопок темы при переходе в настройки
+            if (tabName === 'settings') {
+                const currentTheme = localStorage.getItem('theme') || 'light';
+                setTimeout(() => setTheme(currentTheme), 0);
+            }
         }
 
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
             setDefaultDateTime();
-            if (modalId === 'adjustBalance') {
+            if (id === 'adjustBalance') {
                 const { balanceSUM, balanceUSD } = calculateBalance();
-                document.getElementById('actualBalanceSUM').value = balanceSUM;
-                document.getElementById('actualBalanceUSD').value = balanceUSD;
+                document.getElementById('actualBalanceSUM').value = balanceSUM.toLocaleString('ru-RU');
+                document.getElementById('actualBalanceUSD').value = balanceUSD.toLocaleString('ru-RU');
                 updateAdjustSummary();
             }
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function updateCategorySelect() {
+            const type = document.getElementById('operationType').value;
+            const categories = type === 'expense' ? appData.expenseCategories : appData.incomeCategories;
+            const select = document.getElementById('category');
+            select.innerHTML = '<option>Выбрать</option>';
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        function renderCategoryLists() {
+            ['expenseCategoryList', 'incomeCategoryList'].forEach((id, i) => {
+                const container = document.getElementById(id);
+                const categories = i === 0 ? appData.expenseCategories : appData.incomeCategories;
+                container.innerHTML = '';
+                categories.forEach(cat => {
+                    if (cat !== 'Корректировка баланса') {
+                        const tag = document.createElement('div');
+                        tag.className = 'category-badge';
+                        tag.innerHTML = `${cat} <span class="remove" onclick="removeCategory('${cat}', '${i === 0 ? 'expense' : 'income'}')">×</span>`;
+                        container.appendChild(tag);
+                    }
+                });
+            });
+            document.getElementById('expenseCategoryInput').value = '';
+            document.getElementById('incomeCategoryInput').value = '';
+        }
+
+        function addExpenseCategory() {
+            const input = document.getElementById('expenseCategoryInput');
+            if (input.value.trim() && !appData.expenseCategories.includes(input.value.trim())) {
+                appData.expenseCategories.push(input.value.trim());
+                saveData();
+                renderCategoryLists();
+                updateCategorySelect();
+                showMessage('Категория добавлена', 'success');
+            }
+        }
+
+        function addIncomeCategory() {
+            const input = document.getElementById('incomeCategoryInput');
+            if (input.value.trim() && !appData.incomeCategories.includes(input.value.trim())) {
+                appData.incomeCategories.push(input.value.trim());
+                saveData();
+                renderCategoryLists();
+                updateCategorySelect();
+                showMessage('Категория добавлена', 'success');
+            }
+        }
+
+        function removeCategory(cat, type) {
+            const arr = type === 'expense' ? appData.expenseCategories : appData.incomeCategories;
+            const idx = arr.indexOf(cat);
+            if (idx > -1) {
+                arr.splice(idx, 1);
+                saveData();
+                renderCategoryLists();
+                updateCategorySelect();
+            }
+        }
+
+        function addOperation() {
+            const type = document.getElementById('operationType').value;
+            const category = document.getElementById('category').value;
+            const amountStr = document.getElementById('amount').value.replace(/\s/g, '');
+            const amount = parseFloat(amountStr);
+            const currency = document.getElementById('currency').value;
+            const dateTime = document.getElementById('dateTime').value;
+            const description = document.getElementById('description').value;
+
+            if (!category || category === 'Выбрать' || !amount || amount <= 0 || !dateTime) {
+                showMessage('Заполните все поля', 'error');
+                return;
+            }
+
+            appData.operations.push({
+                id: Date.now(),
+                type, category, amount, currency,
+                dateTime: new Date(dateTime).getTime(),
+                description, timestamp: new Date().getTime()
+            });
+
+            saveData();
+            updateDashboard();
+            updateHistoryFilter();
+            resetForm();
+            setDefaultDateTime();
+            showMessage('Операция добавлена', 'success');
+            if (isSynced) syncWithGoogleAppsScript();
+        }
+
+        function resetForm() {
+            document.getElementById('operationType').value = 'expense';
+            document.getElementById('category').value = 'Выбрать';
+            document.getElementById('amount').value = '';
+            document.getElementById('description').value = '';
+            setDefaultDateTime();
+            updateCategorySelect();
+        }
+
+        function calculateBalance() {
+            let balanceSUM = appData.initialBalanceSUM;
+            let balanceUSD = appData.initialBalanceUSD;
+            appData.operations.forEach(op => {
+                if (op.type === 'income') {
+                    if (op.currency === 'SUM') balanceSUM += op.amount;
+                    else balanceUSD += op.amount;
+                } else {
+                    if (op.currency === 'SUM') balanceSUM -= op.amount;
+                    else balanceUSD -= op.amount;
+                }
+            });
+            return { balanceSUM, balanceUSD };
         }
 
         function updateAdjustSummary() {
-            const actualSUM = parseFloat(document.getElementById('actualBalanceSUM').value) || 0;
-            const actualUSD = parseFloat(document.getElementById('actualBalanceUSD').value) || 0;
+            const actualSUM = parseFloat(document.getElementById('actualBalanceSUM').value.replace(/\s/g, '')) || 0;
+            const actualUSD = parseFloat(document.getElementById('actualBalanceUSD').value.replace(/\s/g, '')) || 0;
             const { balanceSUM, balanceUSD } = calculateBalance();
 
             const diffSUM = actualSUM - balanceSUM;
@@ -1041,8 +1274,10 @@
         }
 
         function applyBalanceAdjustment() {
-            const actualSUM = parseFloat(document.getElementById('actualBalanceSUM').value) || 0;
-            const actualUSD = parseFloat(document.getElementById('actualBalanceUSD').value) || 0;
+            const actualSumStr = document.getElementById('actualBalanceSUM').value.replace(/\s/g, '');
+            const actualUsdStr = document.getElementById('actualBalanceUSD').value.replace(/\s/g, '');
+            const actualSUM = parseFloat(actualSumStr) || 0;
+            const actualUSD = parseFloat(actualUsdStr) || 0;
             const adjustDate = document.getElementById('adjustDate').value;
 
             const { balanceSUM, balanceUSD } = calculateBalance();
@@ -1080,151 +1315,18 @@
             updateHistoryFilter();
             closeModal('adjustBalance');
             if (isSynced) syncWithGoogleAppsScript();
-            showSuccess('Баланс скорректирован');
-        }
-
-        function calculateBalance() {
-            let balanceSUM = appData.initialBalanceSUM;
-            let balanceUSD = appData.initialBalanceUSD;
-
-            appData.operations.forEach(op => {
-                if (op.type === 'income') {
-                    if (op.currency === 'SUM') balanceSUM += op.amount;
-                    else balanceUSD += op.amount;
-                } else {
-                    if (op.currency === 'SUM') balanceSUM -= op.amount;
-                    else balanceUSD -= op.amount;
-                }
-            });
-
-            return { balanceSUM, balanceUSD };
-        }
-
-        function updateCategorySelect() {
-            const type = document.getElementById('operationType').value;
-            const categories = type === 'expense' ? appData.expenseCategories : appData.incomeCategories;
-            const select = document.getElementById('category');
-            select.innerHTML = '<option>Выбрать</option>';
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                select.appendChild(option);
-            });
-        }
-
-        function renderCategoryLists() {
-            renderCategoryList('expenseCategoryList', 'expense');
-            renderCategoryList('incomeCategoryList', 'income');
-            document.getElementById('expenseCategoryInput').value = '';
-            document.getElementById('incomeCategoryInput').value = '';
-        }
-
-        function renderCategoryList(elementId, type) {
-            const categories = type === 'expense' ? appData.expenseCategories : appData.incomeCategories;
-            const container = document.getElementById(elementId);
-            container.innerHTML = '';
-            categories.forEach(cat => {
-                if (cat !== 'Корректировка баланса') {
-                    const tag = document.createElement('div');
-                    tag.className = 'category-tag';
-                    tag.innerHTML = `${cat} <span class="remove" onclick="removeCategory('${cat}', '${type}')">×</span>`;
-                    container.appendChild(tag);
-                }
-            });
-        }
-
-        function addExpenseCategory() {
-            const input = document.getElementById('expenseCategoryInput');
-            if (input.value.trim() && !appData.expenseCategories.includes(input.value.trim())) {
-                appData.expenseCategories.push(input.value.trim());
-                saveData();
-                renderCategoryLists();
-                updateCategorySelect();
-                showSuccess('Категория добавлена');
-            }
-        }
-
-        function addIncomeCategory() {
-            const input = document.getElementById('incomeCategoryInput');
-            if (input.value.trim() && !appData.incomeCategories.includes(input.value.trim())) {
-                appData.incomeCategories.push(input.value.trim());
-                saveData();
-                renderCategoryLists();
-                updateCategorySelect();
-                showSuccess('Категория добавлена');
-            }
-        }
-
-        function removeCategory(category, type) {
-            const categories = type === 'expense' ? appData.expenseCategories : appData.incomeCategories;
-            const index = categories.indexOf(category);
-            if (index > -1) {
-                categories.splice(index, 1);
-                saveData();
-                renderCategoryLists();
-                updateCategorySelect();
-            }
-        }
-
-        function addOperation() {
-            const type = document.getElementById('operationType').value;
-            const category = document.getElementById('category').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const currency = document.getElementById('currency').value;
-            const dateTime = document.getElementById('dateTime').value;
-            const description = document.getElementById('description').value;
-
-            if (!category || category === 'Выбрать' || !amount || amount <= 0 || !dateTime) {
-                showError('Заполните все поля');
-                return;
-            }
-
-            appData.operations.push({
-                id: Date.now(),
-                type,
-                category,
-                amount,
-                currency,
-                dateTime: new Date(dateTime).getTime(),
-                description,
-                timestamp: new Date().getTime()
-            });
-
-            saveData();
-            updateDashboard();
-            updateHistoryFilter();
-            resetForm();
-            setDefaultDateTime();
-            showSuccess('Операция добавлена');
-
-            if (isSynced) {
-                syncWithGoogleAppsScript();
-            }
-        }
-
-        function resetForm() {
-            document.getElementById('operationType').value = 'expense';
-            document.getElementById('category').value = 'Выбрать';
-            document.getElementById('amount').value = '';
-            document.getElementById('description').value = '';
-            setDefaultDateTime();
-            updateCategorySelect();
+            showMessage('Баланс скорректирован', 'success');
         }
 
         function updateDashboard() {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
             const { balanceSUM, balanceUSD } = calculateBalance();
 
-            let incomeTodaySUM = 0, incomeTodayUSD = 0;
-            let expenseTodaySUM = 0, expenseTodayUSD = 0;
-
+            let incomeTodaySUM = 0, incomeTodayUSD = 0, expenseTodaySUM = 0, expenseTodayUSD = 0;
             appData.operations.forEach(op => {
                 const opDate = new Date(op.dateTime);
                 const opToday = new Date(opDate.getFullYear(), opDate.getMonth(), opDate.getDate());
-
                 if (opToday.getTime() === today.getTime()) {
                     if (op.type === 'income') {
                         if (op.currency === 'SUM') incomeTodaySUM += op.amount;
@@ -1236,30 +1338,21 @@
                 }
             });
 
-            document.getElementById('balanceSUM').textContent = formatCurrency(balanceSUM);
-            document.getElementById('balanceUSD').textContent = formatCurrency(balanceUSD);
-            document.getElementById('balanceSUMDetail').textContent = `Всего`;
-            document.getElementById('balanceUSDDetail').textContent = `Всего`;
-
-            document.getElementById('incomeTodaySUM').textContent = formatCurrency(incomeTodaySUM);
-            document.getElementById('incomeTodayUSD').textContent = formatCurrency(incomeTodayUSD);
-            document.getElementById('incomeTodaySUMDetail').textContent = `Сегодня`;
-            document.getElementById('incomeTodayUSDDetail').textContent = `Сегодня`;
-
-            document.getElementById('expenseTodaySUM').textContent = formatCurrency(expenseTodaySUM);
-            document.getElementById('expenseTodayUSD').textContent = formatCurrency(expenseTodayUSD);
-            document.getElementById('expenseTodaySUMDetail').textContent = `Сегодня`;
-            document.getElementById('expenseTodayUSDDetail').textContent = `Сегодня`;
+            document.getElementById('balanceSUM').textContent = balanceSUM.toLocaleString('ru-RU');
+            document.getElementById('balanceUSD').textContent = balanceUSD.toLocaleString('ru-RU');
+            document.getElementById('incomeTodaySUM').textContent = incomeTodaySUM.toLocaleString('ru-RU');
+            document.getElementById('incomeTodayUSD').textContent = incomeTodayUSD.toLocaleString('ru-RU');
+            document.getElementById('expenseTodaySUM').textContent = expenseTodaySUM.toLocaleString('ru-RU');
+            document.getElementById('expenseTodayUSD').textContent = expenseTodayUSD.toLocaleString('ru-RU');
 
             const recent = appData.operations.slice().sort((a, b) => b.dateTime - a.dateTime).slice(0, 5);
             const recentHtml = recent.length > 0 
                 ? recent.map(op => operationHTML(op)).join('')
-                : '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Нет операций</div></div>';
+                : '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Нет операций</div></div>';
             document.getElementById('recentOps').innerHTML = recentHtml;
 
             document.getElementById('sheetId').value = appData.sheetId;
             document.getElementById('deployUrl').value = appData.deployUrl;
-
             updateAnalytics();
         }
 
@@ -1271,14 +1364,14 @@
             const formattedAmount = op.amount.toLocaleString('ru-RU');
             return `
                 <div class="operation-item">
-                    <div class="operation-left">
-                        <div class="operation-category">${op.category}</div>
+                    <div class="operation-info">
+                        <h4>${op.category}</h4>
                         <div class="operation-details">
                             <span>${date} ${time}</span>
-                            ${op.description ? `<span>Заметка: ${op.description}</span>` : ''}
+                            ${op.description ? `<span>${op.description}</span>` : ''}
                         </div>
                     </div>
-                    <div class="operation-right">
+                    <div style="display: flex; align-items: center; gap: 12px;">
                         <div class="operation-amount ${amountClass}">${sign} ${formattedAmount} ${op.currency}</div>
                         <button class="btn btn-danger btn-small" onclick="deleteOperation(${op.id})">Удалить</button>
                     </div>
@@ -1289,7 +1382,6 @@
         function updateHistoryFilter() {
             const filterCategory = document.getElementById('filterCategory');
             filterCategory.innerHTML = '<option value="">Все</option>';
-            
             const allCategories = new Set([...appData.expenseCategories, ...appData.incomeCategories]);
             allCategories.forEach(cat => {
                 const option = document.createElement('option');
@@ -1297,26 +1389,21 @@
                 option.textContent = cat;
                 filterCategory.appendChild(option);
             });
-
             filterOperations();
         }
 
         function filterOperations() {
             const filterType = document.getElementById('filterType').value;
             const filterCategory = document.getElementById('filterCategory').value;
-
             let filtered = appData.operations.filter(op => {
                 const typeMatch = !filterType || op.type === filterType;
                 const categoryMatch = !filterCategory || op.category === filterCategory;
                 return typeMatch && categoryMatch;
             });
-
             filtered.sort((a, b) => b.dateTime - a.dateTime);
-
             const html = filtered.length > 0
                 ? filtered.map(op => operationHTML(op)).join('')
-                : '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Нет операций</div></div>';
-            
+                : '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Нет операций</div></div>';
             document.getElementById('historyList').innerHTML = html;
         }
 
@@ -1327,7 +1414,7 @@
                 updateDashboard();
                 updateHistoryFilter();
                 if (isSynced) syncWithGoogleAppsScript();
-                showSuccess('Операция удалена');
+                showMessage('Операция удалена', 'success');
             }
         }
 
@@ -1340,36 +1427,37 @@
         function updateCategoryStats(elementId, type) {
             const stats = {};
             appData.operations.filter(op => op.type === type).forEach(op => {
-                if (!stats[op.category]) stats[op.category] = { count: 0, sum: 0 };
+                if (!stats[op.category]) stats[op.category] = { count: 0, sumSum: 0, sumUsd: 0 };
                 stats[op.category].count++;
-                stats[op.category].sum += op.amount;
+                if (op.currency === 'SUM') stats[op.category].sumSum += op.amount;
+                else stats[op.category].sumUsd += op.amount;
             });
 
             const html = Object.entries(stats)
-                .sort((a, b) => b[1].sum - a[1].sum)
+                .sort((a, b) => (b[1].sumSum + b[1].sumUsd * 100) - (a[1].sumSum + a[1].sumUsd * 100))
                 .map(([category, data]) => `
-                    <div class="stat-item">
-                        <div class="stat-label">${category}</div>
-                        <div class="stat-value">${formatCurrency(data.sum)}</div>
-                        <div class="stat-badge">Операций: ${data.count}</div>
+                    <div class="analytics-item" onclick="openCategoryDetails('${category}', '${type}')">
+                        <div class="analytics-label">${category}</div>
+                        <div class="analytics-value">${data.sumSum.toLocaleString('ru-RU')}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">SUM</div>
+                        ${data.sumUsd > 0 ? `<div class="analytics-value" style="font-size: 18px;">${data.sumUsd.toLocaleString('ru-RU')}</div><div class="analytics-sub">USD</div>` : ''}
+                        <div class="analytics-sub" style="margin-top: 8px;">Операций: ${data.count}</div>
                     </div>
                 `)
                 .join('');
 
-            document.getElementById(elementId).innerHTML = html || '<div class="stat-item"><div class="stat-label">Нет данных</div></div>';
+            document.getElementById(elementId).innerHTML = html || '<div class="analytics-item"><div class="analytics-label">Нет данных</div></div>';
         }
 
         function updateDailyStats() {
             const stats = {};
             const today = new Date();
-            
             for (let i = 6; i >= 0; i--) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
                 const dateStr = date.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' });
                 stats[dateStr] = { income: 0, expense: 0 };
             }
-
             appData.operations.forEach(op => {
                 const opDate = new Date(op.dateTime);
                 const dateStr = opDate.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' });
@@ -1378,63 +1466,96 @@
                     else stats[dateStr].expense += op.amount;
                 }
             });
-
             const html = Object.entries(stats).map(([date, data]) => `
-                <div class="stat-item">
-                    <div class="stat-label">${date}</div>
-                    <div style="font-size: 13px; color: var(--accent-green); margin-bottom: 6px;">➕ ${formatCurrency(data.income)}</div>
-                    <div style="font-size: 13px; color: var(--accent-red);">➖ ${formatCurrency(data.expense)}</div>
+                <div class="analytics-item">
+                    <div class="analytics-label">${date}</div>
+                    <div style="font-size: 13px; color: var(--success); font-weight: 600; margin-bottom: 6px;">➕ ${data.income.toLocaleString('ru-RU')}</div>
+                    <div style="font-size: 13px; color: var(--danger); font-weight: 600;">➖ ${data.expense.toLocaleString('ru-RU')}</div>
                 </div>
             `).join('');
-
             document.getElementById('dailyStats').innerHTML = html;
         }
 
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('ru-RU', { 
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0 
-            }).format(Math.abs(value));
+        function openCategoryDetails(category, type) {
+            const operations = appData.operations.filter(op => op.category === category && op.type === type);
+            if (operations.length === 0) return;
+
+            operations.sort((a, b) => a.dateTime - b.dateTime);
+            const firstDate = new Date(operations[0].dateTime).toLocaleDateString('ru-RU');
+            const lastDate = new Date(operations[operations.length - 1].dateTime).toLocaleDateString('ru-RU');
+
+            let html = `
+                <div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
+                    <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">${category}</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">
+                        📅 ${firstDate} - ${lastDate}<br>
+                        📊 Операций: ${operations.length}
+                    </div>
+                </div>
+            `;
+
+            let totalSum = 0, totalUsd = 0;
+            operations.forEach(op => {
+                const date = new Date(op.dateTime).toLocaleDateString('ru-RU');
+                const time = new Date(op.dateTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                const amount = op.amount.toLocaleString('ru-RU');
+                html += `
+                    <div style="padding: 12px; background: var(--bg); border-radius: 10px; margin-bottom: 8px;">
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">${date} ${time}</div>
+                        <div style="font-size: 14px; font-weight: 700; color: ${op.type === 'income' ? 'var(--success)' : 'var(--danger)'};">
+                            ${op.type === 'income' ? '+' : '−'} ${amount} ${op.currency}
+                        </div>
+                        ${op.description ? `<div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Заметка: ${op.description}</div>` : ''}
+                    </div>
+                `;
+                if (op.currency === 'SUM') totalSum += op.amount;
+                else totalUsd += op.amount;
+            });
+
+            html += `
+                <div style="padding: 14px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 10px; margin-top: 16px;">
+                    <div style="font-size: 12px; font-weight: 700; color: #0369a1; text-transform: uppercase; margin-bottom: 8px;">Итого:</div>
+                    ${totalSum > 0 ? `<div style="font-size: 16px; font-weight: 700; color: #0369a1;">SUM: ${totalSum.toLocaleString('ru-RU')}</div>` : ''}
+                    ${totalUsd > 0 ? `<div style="font-size: 16px; font-weight: 700; color: #0369a1;">USD: ${totalUsd.toLocaleString('ru-RU')}</div>` : ''}
+                </div>
+            `;
+
+            document.getElementById('categoryDetailsContent').innerHTML = html;
+            document.getElementById('categoryDetails').classList.add('active');
         }
 
         function setupGoogleAppsScript() {
             const sheetId = document.getElementById('sheetId').value.trim();
             const deployUrl = document.getElementById('deployUrl').value.trim();
-
             if (!sheetId || !deployUrl) {
-                showError('Заполни оба поля!');
+                showMessage('Заполни оба поля', 'error');
                 return;
             }
-
             appData.sheetId = sheetId;
             appData.deployUrl = deployUrl;
             saveData();
-
             testGoogleAppsScriptConnection();
         }
 
         async function testGoogleAppsScriptConnection() {
             if (!appData.deployUrl) return;
-
             updateSyncStatus('Тестирование...', 'connected');
-
             try {
                 const response = await fetch(appData.deployUrl);
                 if (response.ok) {
                     updateSyncStatus('Синхронизировано', 'connected');
                     isSynced = true;
-                    lastSync = new Date();
                     loadFromGoogleAppsScript();
-                    showSuccess('Подключено!');
+                    showMessage('Подключено!', 'success');
                 } else {
                     updateSyncStatus('Ошибка', 'error');
                     isSynced = false;
-                    showError('Ошибка подключения');
+                    showMessage('Ошибка подключения', 'error');
                 }
             } catch (error) {
                 updateSyncStatus('Ошибка', 'error');
                 isSynced = false;
-                showError('Ошибка: ' + error.message);
+                showMessage('Ошибка: ' + error.message, 'error');
             }
         }
 
@@ -1443,13 +1564,11 @@
                 updateSyncStatus('Не настроено', 'error');
                 return;
             }
-
             try {
                 const response = await fetch(appData.deployUrl);
                 if (response.ok) {
                     updateSyncStatus('Синхронизировано', 'connected');
                     isSynced = true;
-                    lastSync = new Date();
                     loadFromGoogleAppsScript();
                 } else {
                     updateSyncStatus('Ошибка', 'error');
@@ -1462,34 +1581,23 @@
         }
 
         function updateSyncStatus(text, status) {
-            const statusEl = document.getElementById('syncStatus');
-            statusEl.className = `sync-status ${status}`;
+            const badge = document.getElementById('syncStatus');
+            badge.className = `sync-badge ${status === 'error' ? 'error' : ''}`;
             document.getElementById('syncText').textContent = text;
         }
 
         async function loadFromGoogleAppsScript() {
             if (!appData.deployUrl) return;
-
             try {
                 const response = await fetch(appData.deployUrl);
                 const data = await response.json();
-                
                 if (data.operations && Array.isArray(data.operations)) {
                     const localIds = new Set(appData.operations.map(op => op.id));
                     const remoteIds = new Set(data.operations.map(op => op.id));
-                    
-                    // Добавляем новые операции
                     const toAdd = data.operations.filter(op => !localIds.has(op.id));
-                    if (toAdd.length > 0) {
-                        appData.operations.push(...toAdd);
-                    }
-                    
-                    // Удаляем операции которые удалили на другом устройстве
                     const toDelete = Array.from(localIds).filter(id => !remoteIds.has(id));
-                    if (toDelete.length > 0) {
-                        appData.operations = appData.operations.filter(op => !toDelete.includes(op.id));
-                    }
-                    
+                    if (toAdd.length > 0) appData.operations.push(...toAdd);
+                    if (toDelete.length > 0) appData.operations = appData.operations.filter(op => !toDelete.includes(op.id));
                     if (toAdd.length > 0 || toDelete.length > 0) {
                         saveData();
                         updateDashboard();
@@ -1503,7 +1611,6 @@
 
         async function syncWithGoogleAppsScript() {
             if (!appData.deployUrl) return;
-
             try {
                 const response = await fetch(appData.deployUrl, {
                     method: 'POST',
@@ -1513,66 +1620,42 @@
                         initialBalanceUSD: appData.initialBalanceUSD
                     })
                 });
-
-                if (!response.ok) {
-                    console.error('Sync error:', response.status);
-                }
             } catch (error) {
                 console.error('Sync error:', error);
             }
         }
 
         function autoSync() {
-            if (isSynced && appData.deployUrl) {
-                syncWithGoogleAppsScript();
-            }
+            if (isSynced && appData.deployUrl) syncWithGoogleAppsScript();
         }
 
         function exportToExcel() {
             try {
                 if (typeof XLSX === 'undefined') {
-                    showError('Библиотека загружается, подожди');
+                    showMessage('Библиотека загружается, подожди', 'error');
                     return;
                 }
-
-                const data = [
-                    ['Дата', 'Время', 'Тип', 'Категория', 'Сумма', 'Валюта', 'Описание']
-                ];
-                
+                const data = [['Дата', 'Время', 'Тип', 'Категория', 'Сумма', 'Валюта', 'Описание']];
                 appData.operations.slice().sort((a, b) => a.dateTime - b.dateTime).forEach(op => {
                     const date = new Date(op.dateTime);
                     const dateStr = date.toLocaleDateString('ru-RU');
                     const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
                     data.push([
-                        dateStr,
-                        timeStr,
+                        dateStr, timeStr,
                         op.type === 'income' ? 'Приход' : 'Расход',
-                        op.category,
-                        op.amount,
-                        op.currency,
+                        op.category, op.amount, op.currency,
                         op.description || ''
                     ]);
                 });
-
                 const ws = XLSX.utils.aoa_to_sheet(data);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Касса");
-                
-                ws['!cols'] = [
-                    { wch: 12 },
-                    { wch: 10 },
-                    { wch: 10 },
-                    { wch: 15 },
-                    { wch: 12 },
-                    { wch: 8 },
-                    { wch: 20 }
-                ];
-
+                ws['!cols'] = [{ wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 12 }, { wch: 8 }, { wch: 20 }];
                 const fileName = `cash_report_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.xlsx`;
                 XLSX.writeFile(wb, fileName);
-                showSuccess('Экспортировано в Excel');
+                showMessage('Экспортировано в Excel', 'success');
             } catch (error) {
-                showError('Ошибка: ' + error.message);
+                showMessage('Ошибка: ' + error.message, 'error');
             }
         }
 
@@ -1584,13 +1667,12 @@
             link.setAttribute('href', url);
             link.setAttribute('download', `cash_backup_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.json`);
             link.click();
-            showSuccess('Резервная копия загружена');
+            showMessage('Резервная копия загружена', 'success');
         }
 
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
@@ -1600,9 +1682,9 @@
                     updateDashboard();
                     updateHistoryFilter();
                     renderCategoryLists();
-                    showSuccess('Данные загружены');
+                    showMessage('Данные загружены', 'success');
                 } catch (error) {
-                    showError('Ошибка при загрузке');
+                    showMessage('Ошибка при загрузке', 'error');
                 }
             };
             reader.readAsText(file);
@@ -1623,38 +1705,24 @@
                 updateDashboard();
                 updateHistoryFilter();
                 renderCategoryLists();
-                showSuccess('Данные очищены');
+                showMessage('Данные очищены', 'success');
             }
         }
 
-        function showSuccess(message) {
+        function showMessage(text, type) {
             const msg = document.createElement('div');
-            msg.className = 'success-message';
-            msg.textContent = message;
+            msg.className = `message ${type}`;
+            msg.textContent = text;
             document.body.appendChild(msg);
             setTimeout(() => msg.remove(), 3000);
         }
 
-        function showError(message) {
-            const msg = document.createElement('div');
-            msg.className = 'error-message';
-            msg.textContent = message;
-            document.body.appendChild(msg);
-            setTimeout(() => msg.remove(), 3000);
-        }
-
-        // Закрытие модала при клике на фон
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('active');
-            }
+            if (e.target.classList.contains('modal')) e.target.classList.remove('active');
         });
 
-        // Обновление превью при изменении данных в модале
         document.addEventListener('change', (e) => {
-            if (e.target.id === 'actualBalanceSUM' || e.target.id === 'actualBalanceUSD') {
-                updateAdjustSummary();
-            }
+            if (['actualBalanceSUM', 'actualBalanceUSD'].includes(e.target.id)) updateAdjustSummary();
         });
     </script>
 </body>
