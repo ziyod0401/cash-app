@@ -60,18 +60,18 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 16px;
         }
 
         header {
-            margin-bottom: 40px;
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 24px;
             background: var(--bg-secondary);
-            padding: 32px;
-            border-radius: 16px;
+            padding: 20px;
+            border-radius: 14px;
             box-shadow: var(--shadow-md);
         }
 
@@ -112,10 +112,20 @@
             animation: pulse 2s infinite;
         }
 
+        .sync-badge.offline {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #fcd34d;
+            color: #92400e;
+        }
+
         .sync-badge.error {
             background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
             border-color: #fecaca;
             color: #dc2626;
+        }
+
+        .sync-badge.offline .sync-dot {
+            background: var(--warning);
         }
 
         .sync-badge.error .sync-dot {
@@ -181,19 +191,101 @@
             }
         }
 
-        /* Dashboard Grid */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
+        .carousel-container {
+            display: flex;
+            gap: 16px;
             margin-bottom: 32px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scroll-behavior: smooth;
+        }
+
+        .carousel-item {
+            flex: 0 0 calc(50% - 8px);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .carousel-item:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .carousel-item.income {
+            border-top: 3px solid var(--success);
+        }
+
+        .carousel-item.expense {
+            border-top: 3px solid var(--danger);
+        }
+
+        .carousel-item.balance {
+            border-top: 3px solid var(--primary);
+        }
+
+        .carousel-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .carousel-value {
+            font-family: 'Sora', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .carousel-sub {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* Скрыть горизонтальный скроллбар */
+        .carousel-container::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .carousel-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .carousel-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .carousel-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        @media (min-width: 1024px) {
+            .carousel-item {
+                flex: 0 0 calc(33.333% - 11px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .carousel-item {
+                flex: 0 0 calc(100% - 8px);
+            }
         }
 
         .stat-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 24px;
+            border-radius: 12px;
+            padding: 18px;
             box-shadow: var(--shadow-sm);
             transition: all 0.3s ease;
             cursor: pointer;
@@ -218,29 +310,26 @@
         }
 
         .stat-label {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .stat-value {
             font-family: 'Sora', sans-serif;
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .stat-sub {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-tertiary);
         }
-
-        /* Cards & Sections */
-        .section {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 14px;
@@ -251,9 +340,9 @@
 
         .section-title {
             font-family: 'Sora', sans-serif;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -303,7 +392,6 @@
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
-        /* Buttons */
         .btn {
             padding: 12px 20px;
             border: none;
@@ -327,10 +415,6 @@
             box-shadow: var(--shadow-lg);
         }
 
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
         .btn-secondary {
             background: var(--bg);
             color: var(--text-primary);
@@ -348,10 +432,6 @@
             font-size: 12px;
         }
 
-        .btn-danger:hover {
-            background: #fecaca;
-        }
-
         .btn-small {
             padding: 8px 16px;
             font-size: 12px;
@@ -365,7 +445,6 @@
             flex-wrap: wrap;
         }
 
-        /* Operations List */
         .operations-list {
             display: flex;
             flex-direction: column;
@@ -386,6 +465,18 @@
         .operation-item:hover {
             border-color: var(--primary-light);
             background: rgba(99, 102, 241, 0.02);
+        }
+
+        .operation-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 12px;
+            background: rgba(99, 102, 241, 0.1);
         }
 
         .operation-info h4 {
@@ -418,7 +509,6 @@
             color: var(--danger);
         }
 
-        /* Analytics */
         .analytics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -461,7 +551,6 @@
             color: var(--text-tertiary);
         }
 
-        /* Settings */
         .settings-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -535,7 +624,6 @@
             }
         }
 
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -553,7 +641,6 @@
             color: var(--text-primary);
         }
 
-        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -622,7 +709,6 @@
             color: var(--text-primary);
         }
 
-        /* FAB */
         .fab {
             position: fixed;
             bottom: 30px;
@@ -652,7 +738,6 @@
             transform: scale(0.95);
         }
 
-        /* Messages */
         .message {
             position: fixed;
             top: 20px;
@@ -678,7 +763,62 @@
             border: 1px solid #fca5a5;
         }
 
-        /* Responsive */
+        .filter-controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-controls .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .sort-select {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .converter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .converter-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .converter-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .converter-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .converter-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 16px;
@@ -742,6 +882,14 @@
                 padding: 24px;
                 border-radius: 14px;
             }
+
+            .filter-controls {
+                flex-direction: column;
+            }
+
+            .filter-controls .form-group {
+                width: 100%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -757,11 +905,41 @@
                 font-size: 20px;
             }
         }
+
+        .offline-notice {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #92400e;
+            display: none;
+        }
+
+        .offline-notice.show {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header>
             <div class="header-content">
                 <h1>Касса</h1>
@@ -773,12 +951,16 @@
             </div>
         </header>
 
-        <!-- Tabs -->
+        <div class="offline-notice" id="offlineNotice">
+            ⚠️ Режим офлайн. Изменения будут синхронизированы при подключении интернета.
+        </div>
+
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Панель</button>
             <button class="tab-btn" onclick="switchTab('add')">➕ Операция</button>
             <button class="tab-btn" onclick="switchTab('history')">📋 История</button>
             <button class="tab-btn" onclick="switchTab('analytics')">📈 Аналитика</button>
+            <button class="tab-btn" onclick="switchTab('converter')">💱 Конвертер</button>
             <button class="tab-btn" onclick="switchTab('settings')">⚙️ Настройки</button>
         </div>
 
@@ -788,32 +970,32 @@
                 <div class="stat-card balance">
                     <div class="stat-label">💰 Остаток SUM</div>
                     <div class="stat-value" id="balanceSUM">0</div>
-                    <div class="stat-sub">Всего в кассе</div>
+                    <div class="stat-sub">Всего</div>
                 </div>
                 <div class="stat-card balance">
                     <div class="stat-label">💵 Остаток USD</div>
                     <div class="stat-value" id="balanceUSD">0</div>
-                    <div class="stat-sub">Всего в кассе</div>
+                    <div class="stat-sub">Всего</div>
                 </div>
                 <div class="stat-card income">
                     <div class="stat-label">➕ Приход SUM</div>
                     <div class="stat-value" id="incomeTodaySUM" style="color: var(--success);">0</div>
-                    <div class="stat-sub">За сегодня</div>
+                    <div class="stat-sub">Сегодня</div>
                 </div>
                 <div class="stat-card income">
                     <div class="stat-label">➕ Приход USD</div>
                     <div class="stat-value" id="incomeTodayUSD" style="color: var(--success);">0</div>
-                    <div class="stat-sub">За сегодня</div>
+                    <div class="stat-sub">Сегодня</div>
                 </div>
                 <div class="stat-card expense">
                     <div class="stat-label">➖ Расход SUM</div>
                     <div class="stat-value" id="expenseTodaySUM" style="color: var(--danger);">0</div>
-                    <div class="stat-sub">За сегодня</div>
+                    <div class="stat-sub">Сегодня</div>
                 </div>
                 <div class="stat-card expense">
                     <div class="stat-label">➖ Расход USD</div>
                     <div class="stat-value" id="expenseTodayUSD" style="color: var(--danger);">0</div>
-                    <div class="stat-sub">За сегодня</div>
+                    <div class="stat-sub">Сегодня</div>
                 </div>
             </div>
 
@@ -874,14 +1056,26 @@
         <!-- History -->
         <div id="history" class="tab-content">
             <div class="section">
-                <div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <div class="form-group" style="flex: 1; min-width: 160px;">
+                <div class="filter-controls">
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>Поиск</label>
+                        <input type="text" id="searchInput" placeholder="Поиск по категории или заметке" oninput="filterOperations()">
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>От даты</label>
+                        <input type="date" id="dateFrom" onchange="filterOperations()">
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>До даты</label>
+                        <input type="date" id="dateTo" onchange="filterOperations()">
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
                         <label>Категория</label>
                         <select id="filterCategory" onchange="filterOperations()">
                             <option value="">Все</option>
                         </select>
                     </div>
-                    <div class="form-group" style="flex: 1; min-width: 160px;">
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
                         <label>Тип</label>
                         <select id="filterType" onchange="filterOperations()">
                             <option value="">Все</option>
@@ -889,10 +1083,19 @@
                             <option value="income">Приходы</option>
                         </select>
                     </div>
-                    <div style="flex: 1; min-width: 160px; display: flex; align-items: flex-end;">
+                    <div style="flex: 1; min-width: 150px; display: flex; align-items: flex-end;">
                         <button class="btn btn-primary" style="width: 100%;" onclick="exportToExcel()">📥 Excel</button>
                     </div>
                 </div>
+
+                <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
+                    <span style="font-size: 13px; color: var(--text-secondary);">Сортировка:</span>
+                    <button class="btn btn-secondary btn-small" onclick="setSortOrder('date-desc')">📅 Новые</button>
+                    <button class="btn btn-secondary btn-small" onclick="setSortOrder('date-asc')">📅 Старые</button>
+                    <button class="btn btn-secondary btn-small" onclick="setSortOrder('amount-desc')">💰 Больше</button>
+                    <button class="btn btn-secondary btn-small" onclick="setSortOrder('amount-asc')">💰 Меньше</button>
+                </div>
+
                 <div id="historyList" class="operations-list"></div>
             </div>
         </div>
@@ -910,6 +1113,39 @@
             <div class="section">
                 <div class="section-title">По дням (последние 7 дней)</div>
                 <div id="dailyStats" class="analytics-grid"></div>
+            </div>
+        </div>
+
+        <!-- Converter -->
+        <div id="converter" class="tab-content">
+            <div class="section">
+                <div class="section-title">💱 Конвертер валют</div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Курс USD → SUM</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="exchangeRate" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this); updateConverter()" style="flex: 1;">
+                        <button class="btn btn-secondary btn-small" onclick="resetExchangeRate()">Сброс</button>
+                    </div>
+                </div>
+
+                <div class="converter-grid">
+                    <div class="converter-item">
+                        <div class="converter-label">USD → SUM</div>
+                        <input type="text" id="converterUSD" placeholder="USD" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="convertUSDtoSUM()" class="converter-input">
+                        <div class="converter-value" id="converterResult">0</div>
+                    </div>
+                    <div class="converter-item">
+                        <div class="converter-label">SUM → USD</div>
+                        <input type="text" id="converterSUM" placeholder="SUM" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="convertSUMtoUSD()" class="converter-input">
+                        <div class="converter-value" id="converterResultReverse">0</div>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg); padding: 16px; border-radius: 12px; margin-top: 20px;">
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">📊 Текущий курс:</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);">1 USD = <span id="currentRate">-</span> SUM</div>
+                </div>
             </div>
         </div>
 
@@ -946,6 +1182,7 @@
                 </div>
 
                 <div class="section">
+                    <div class="settings-title">☁️ Google Apps Script</div>
                     <div class="form-group" style="margin-bottom: 12px;">
                         <label>ID Таблицы</label>
                         <textarea id="sheetId" placeholder="ID" style="height: 60px;"></textarea>
@@ -1027,6 +1264,20 @@
     <button class="fab" onclick="switchTab('add')" title="Добавить операцию">➕</button>
 
     <script>
+        const ICONS = {
+            'Зарплата': '💼',
+            'Электричество': '⚡',
+            'Материалы': '📦',
+            'Транспорт': '🚗',
+            'Прочее': '📝',
+            'Продажи': '💳',
+            'Прочие приходы': '💰',
+            'Корректировка баланса': '🔧'
+        };
+
+        const DEFAULT_EXCHANGE_RATE = 12000;
+        let currentExchangeRate = DEFAULT_EXCHANGE_RATE;
+        let sortOrder = 'date-desc';
         let appData = {
             initialBalanceSUM: 0,
             initialBalanceUSD: 0,
@@ -1035,10 +1286,12 @@
             operations: [],
             sheetId: '',
             deployUrl: '',
-            deletedIds: []
+            deletedIds: [],
+            exchangeRate: DEFAULT_EXCHANGE_RATE
         };
 
         let isSynced = false;
+        let isOnline = navigator.onLine;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
@@ -1051,49 +1304,38 @@
             setInterval(checkGoogleAppsScriptConnection, 30000);
             setInterval(autoSync, 10000);
             document.querySelector('.fab').style.display = 'flex';
-            
-            // Инициализация темы
             initTheme();
+            currentExchangeRate = appData.exchangeRate || DEFAULT_EXCHANGE_RATE;
+            document.getElementById('exchangeRate').value = currentExchangeRate.toLocaleString('ru-RU');
+            updateConverter();
+            
+            // Проверка онлайн/офлайн статуса
+            window.addEventListener('online', () => {
+                isOnline = true;
+                updateOfflineStatus();
+                if (isSynced) syncWithGoogleAppsScript();
+            });
+            window.addEventListener('offline', () => {
+                isOnline = false;
+                updateOfflineStatus();
+            });
+            updateOfflineStatus();
         });
 
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            setTheme(savedTheme);
-        }
-
-        function setTheme(theme) {
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark-mode');
-                localStorage.setItem('theme', 'dark');
-                document.getElementById('darkThemeBtn').style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)';
-                document.getElementById('darkThemeBtn').style.color = 'white';
-                document.getElementById('darkThemeBtn').style.border = 'none';
-                document.getElementById('lightThemeBtn').style.background = 'var(--bg)';
-                document.getElementById('lightThemeBtn').style.color = 'var(--text-primary)';
-                document.getElementById('lightThemeBtn').style.border = '1px solid var(--border)';
+        function updateOfflineStatus() {
+            const badge = document.getElementById('syncStatus');
+            const notice = document.getElementById('offlineNotice');
+            if (!isOnline) {
+                badge.className = 'sync-badge offline';
+                document.getElementById('syncText').textContent = '📱 Офлайн режим';
+                notice.classList.add('show');
             } else {
-                document.documentElement.classList.remove('dark-mode');
-                localStorage.setItem('theme', 'light');
-                document.getElementById('lightThemeBtn').style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)';
-                document.getElementById('lightThemeBtn').style.color = 'white';
-                document.getElementById('lightThemeBtn').style.border = 'none';
-                document.getElementById('darkThemeBtn').style.background = 'var(--bg)';
-                document.getElementById('darkThemeBtn').style.color = 'var(--text-primary)';
-                document.getElementById('darkThemeBtn').style.border = '1px solid var(--border)';
+                notice.classList.remove('show');
+                if (isSynced) {
+                    badge.className = 'sync-badge';
+                    document.getElementById('syncText').textContent = 'Синхронизировано';
+                }
             }
-        }
-
-        function saveInitialBalance() {
-            const sumStr = document.getElementById('initialSumInput').value.replace(/\s/g, '');
-            const usdStr = document.getElementById('initialUsdInput').value.replace(/\s/g, '');
-            const sum = parseFloat(sumStr) || 0;
-            const usd = parseFloat(usdStr) || 0;
-
-            appData.initialBalanceSUM = sum;
-            appData.initialBalanceUSD = usd;
-            saveData();
-            updateDashboard();
-            showMessage('Начальный остаток сохранен', 'success');
         }
 
         function loadData() {
@@ -1125,6 +1367,12 @@
             const iso = `${year}-${month}-${day}T${hour}:${minute}`;
             document.getElementById('dateTime').value = iso;
             document.getElementById('adjustDate').value = iso;
+            
+            // Установка датфильтра по умолчанию
+            const dateFromEl = document.getElementById('dateFrom');
+            const dateToEl = document.getElementById('dateTo');
+            if (dateFromEl) dateFromEl.value = `${year}-${month}-01`;
+            if (dateToEl) dateToEl.value = iso.split('T')[0];
         }
 
         function switchTab(tabName) {
@@ -1136,13 +1384,14 @@
             fab.style.display = tabName === 'dashboard' ? 'flex' : 'none';
             updateDashboard();
             
-            // Обновляем состояние кнопок темы и поля баланса при переходе в настройки
             if (tabName === 'settings') {
                 const currentTheme = localStorage.getItem('theme') || 'light';
                 setTimeout(() => setTheme(currentTheme), 0);
-                // Заполняем поля начального остатка
                 document.getElementById('initialSumInput').value = appData.initialBalanceSUM.toLocaleString('ru-RU');
                 document.getElementById('initialUsdInput').value = appData.initialBalanceUSD.toLocaleString('ru-RU');
+            }
+            if (tabName === 'history') {
+                setDefaultDateTime();
             }
         }
 
@@ -1234,7 +1483,6 @@
             const dateTime = document.getElementById('dateTime').value;
             const description = document.getElementById('description').value;
 
-            // Если категория не выбрана, ставим прочие автоматически
             if (!category || category === 'Выбрать') {
                 category = type === 'expense' ? 'Прочее' : 'Прочие приходы';
             }
@@ -1257,7 +1505,7 @@
             resetForm();
             setDefaultDateTime();
             showMessage('Операция добавлена', 'success');
-            if (isSynced) syncWithGoogleAppsScript();
+            if (isSynced && isOnline) syncWithGoogleAppsScript();
         }
 
         function resetForm() {
@@ -1350,7 +1598,7 @@
             updateDashboard();
             updateHistoryFilter();
             closeModal('adjustBalance');
-            if (isSynced) syncWithGoogleAppsScript();
+            if (isSynced && isOnline) syncWithGoogleAppsScript();
             showMessage('Баланс скорректирован', 'success');
         }
 
@@ -1398,8 +1646,10 @@
             const amountClass = op.type === 'income' ? 'income' : 'expense';
             const sign = op.type === 'income' ? '+' : '−';
             const formattedAmount = op.amount.toLocaleString('ru-RU');
+            const icon = ICONS[op.category] || '📝';
             return `
                 <div class="operation-item">
+                    <div class="operation-icon">${icon}</div>
                     <div class="operation-info">
                         <h4>${op.category}</h4>
                         <div class="operation-details">
@@ -1431,22 +1681,49 @@
         function filterOperations() {
             const filterType = document.getElementById('filterType').value;
             const filterCategory = document.getElementById('filterCategory').value;
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+
             let filtered = appData.operations.filter(op => {
                 const typeMatch = !filterType || op.type === filterType;
                 const categoryMatch = !filterCategory || op.category === filterCategory;
-                return typeMatch && categoryMatch;
+                const searchMatch = !searchText || 
+                    op.category.toLowerCase().includes(searchText) || 
+                    (op.description && op.description.toLowerCase().includes(searchText));
+                
+                const opDate = new Date(op.dateTime).toISOString().split('T')[0];
+                const dateMatch = (!dateFrom || opDate >= dateFrom) && (!dateTo || opDate <= dateTo);
+
+                return typeMatch && categoryMatch && searchMatch && dateMatch;
             });
-            filtered.sort((a, b) => b.dateTime - a.dateTime);
+
+            // Сортировка
+            filtered.sort((a, b) => {
+                switch(sortOrder) {
+                    case 'date-asc': return a.dateTime - b.dateTime;
+                    case 'date-desc': return b.dateTime - a.dateTime;
+                    case 'amount-asc': return a.amount - b.amount;
+                    case 'amount-desc': return b.amount - a.amount;
+                    default: return b.dateTime - a.dateTime;
+                }
+            });
+
             const html = filtered.length > 0
                 ? filtered.map(op => operationHTML(op)).join('')
                 : '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Нет операций</div></div>';
+            
             document.getElementById('historyList').innerHTML = html;
+        }
+
+        function setSortOrder(order) {
+            sortOrder = order;
+            filterOperations();
         }
 
         function deleteOperation(id) {
             if (confirm('Удалить операцию?')) {
                 appData.operations = appData.operations.filter(op => op.id !== id);
-                // Помечаем как удаленную чтобы не подгружалась при синхронизации
                 if (!appData.deletedIds) appData.deletedIds = [];
                 if (!appData.deletedIds.includes(id)) {
                     appData.deletedIds.push(id);
@@ -1454,7 +1731,7 @@
                 saveData();
                 updateDashboard();
                 updateHistoryFilter();
-                if (isSynced) syncWithGoogleAppsScript();
+                if (isSynced && isOnline) syncWithGoogleAppsScript();
                 showMessage('Операция удалена', 'success');
             }
         }
@@ -1476,15 +1753,19 @@
 
             const html = Object.entries(stats)
                 .sort((a, b) => (b[1].sumSum + b[1].sumUsd * 100) - (a[1].sumSum + a[1].sumUsd * 100))
-                .map(([category, data]) => `
+                .map(([category, data]) => {
+                    const icon = ICONS[category] || '📝';
+                    return `
                     <div class="analytics-item" onclick="openCategoryDetails('${category}', '${type}')">
+                        <div style="font-size: 24px; margin-bottom: 8px;">${icon}</div>
                         <div class="analytics-label">${category}</div>
                         <div class="analytics-value">${data.sumSum.toLocaleString('ru-RU')}</div>
                         <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">SUM</div>
                         ${data.sumUsd > 0 ? `<div class="analytics-value" style="font-size: 18px;">${data.sumUsd.toLocaleString('ru-RU')}</div><div class="analytics-sub">USD</div>` : ''}
                         <div class="analytics-sub" style="margin-top: 8px;">Операций: ${data.count}</div>
                     </div>
-                `)
+                `;
+                })
                 .join('');
 
             document.getElementById(elementId).innerHTML = html || '<div class="analytics-item"><div class="analytics-label">Нет данных</div></div>';
@@ -1565,6 +1846,33 @@
             document.getElementById('categoryDetails').classList.add('active');
         }
 
+        function updateConverter() {
+            const rateStr = document.getElementById('exchangeRate').value.replace(/\s/g, '');
+            currentExchangeRate = parseFloat(rateStr) || DEFAULT_EXCHANGE_RATE;
+            appData.exchangeRate = currentExchangeRate;
+            saveData();
+            document.getElementById('currentRate').textContent = currentExchangeRate.toLocaleString('ru-RU');
+        }
+
+        function convertUSDtoSUM() {
+            const usdStr = document.getElementById('converterUSD').value.replace(/\s/g, '');
+            const usd = parseFloat(usdStr) || 0;
+            const sum = usd * currentExchangeRate;
+            document.getElementById('converterResult').textContent = sum.toLocaleString('ru-RU');
+        }
+
+        function convertSUMtoUSD() {
+            const sumStr = document.getElementById('converterSUM').value.replace(/\s/g, '');
+            const sum = parseFloat(sumStr) || 0;
+            const usd = sum / currentExchangeRate;
+            document.getElementById('converterResultReverse').textContent = usd.toLocaleString('ru-RU');
+        }
+
+        function resetExchangeRate() {
+            document.getElementById('exchangeRate').value = DEFAULT_EXCHANGE_RATE.toLocaleString('ru-RU');
+            updateConverter();
+        }
+
         function setupGoogleAppsScript() {
             const sheetId = document.getElementById('sheetId').value.trim();
             const deployUrl = document.getElementById('deployUrl').value.trim();
@@ -1579,7 +1887,7 @@
         }
 
         async function testGoogleAppsScriptConnection() {
-            if (!appData.deployUrl) return;
+            if (!appData.deployUrl || !isOnline) return;
             updateSyncStatus('Тестирование...', 'connected');
             try {
                 const response = await fetch(appData.deployUrl);
@@ -1601,7 +1909,7 @@
         }
 
         async function checkGoogleAppsScriptConnection() {
-            if (!appData.deployUrl) {
+            if (!appData.deployUrl || !isOnline) {
                 updateSyncStatus('Не настроено', 'error');
                 return;
             }
@@ -1628,7 +1936,7 @@
         }
 
         async function loadFromGoogleAppsScript() {
-            if (!appData.deployUrl) return;
+            if (!appData.deployUrl || !isOnline) return;
             try {
                 const response = await fetch(appData.deployUrl);
                 const data = await response.json();
@@ -1637,18 +1945,15 @@
                     const localIds = new Set(appData.operations.map(op => op.id));
                     const remoteIds = new Set(data.operations.map(op => op.id));
                     
-                    // Добавляем только новые операции которые не были удалены локально
                     const toAdd = data.operations.filter(op => 
                         !localIds.has(op.id) && !appData.deletedIds.includes(op.id)
                     );
                     
-                    // Удаляем операции которые удалили на другом устройстве
                     const toDelete = Array.from(localIds).filter(id => !remoteIds.has(id));
                     
                     if (toAdd.length > 0) appData.operations.push(...toAdd);
                     if (toDelete.length > 0) {
                         appData.operations = appData.operations.filter(op => !toDelete.includes(op.id));
-                        // Добавляем в deletedIds чтобы они не подгружались снова
                         toDelete.forEach(id => {
                             if (!appData.deletedIds.includes(id)) {
                                 appData.deletedIds.push(id);
@@ -1668,7 +1973,7 @@
         }
 
         async function syncWithGoogleAppsScript() {
-            if (!appData.deployUrl) return;
+            if (!appData.deployUrl || !isOnline) return;
             try {
                 const response = await fetch(appData.deployUrl, {
                     method: 'POST',
@@ -1684,7 +1989,7 @@
         }
 
         function autoSync() {
-            if (isSynced && appData.deployUrl) syncWithGoogleAppsScript();
+            if (isSynced && appData.deployUrl && isOnline) syncWithGoogleAppsScript();
         }
 
         function exportToExcel() {
@@ -1757,7 +2062,9 @@
                     incomeCategories: ['Продажи', 'Прочие приходы'],
                     operations: [],
                     sheetId: appData.sheetId,
-                    deployUrl: appData.deployUrl
+                    deployUrl: appData.deployUrl,
+                    deletedIds: [],
+                    exchangeRate: DEFAULT_EXCHANGE_RATE
                 };
                 saveData();
                 updateDashboard();
@@ -1773,6 +2080,46 @@
             msg.textContent = text;
             document.body.appendChild(msg);
             setTimeout(() => msg.remove(), 3000);
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('darkThemeBtn').style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)';
+                document.getElementById('darkThemeBtn').style.color = 'white';
+                document.getElementById('darkThemeBtn').style.border = 'none';
+                document.getElementById('lightThemeBtn').style.background = 'var(--bg)';
+                document.getElementById('lightThemeBtn').style.color = 'var(--text-primary)';
+                document.getElementById('lightThemeBtn').style.border = '1px solid var(--border)';
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('lightThemeBtn').style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)';
+                document.getElementById('lightThemeBtn').style.color = 'white';
+                document.getElementById('lightThemeBtn').style.border = 'none';
+                document.getElementById('darkThemeBtn').style.background = 'var(--bg)';
+                document.getElementById('darkThemeBtn').style.color = 'var(--text-primary)';
+                document.getElementById('darkThemeBtn').style.border = '1px solid var(--border)';
+            }
+        }
+
+        function saveInitialBalance() {
+            const sumStr = document.getElementById('initialSumInput').value.replace(/\s/g, '');
+            const usdStr = document.getElementById('initialUsdInput').value.replace(/\s/g, '');
+            const sum = parseFloat(sumStr) || 0;
+            const usd = parseFloat(usdStr) || 0;
+
+            appData.initialBalanceSUM = sum;
+            appData.initialBalanceUSD = usd;
+            saveData();
+            updateDashboard();
+            showMessage('Начальный остаток сохранен', 'success');
         }
 
         document.addEventListener('click', (e) => {
