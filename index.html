@@ -931,7 +931,21 @@
                 </div>
 
                 <div class="section">
-                    <div class="settings-title">☁️ Google Apps Script</div>
+                    <div class="settings-title">💰 Начальный остаток на кассе</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Начальный остаток SUM</label>
+                            <input type="text" id="initialSumInput" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
+                        </div>
+                        <div class="form-group">
+                            <label>Начальный остаток USD</label>
+                            <input type="text" id="initialUsdInput" placeholder="0" inputmode="numeric" onkeypress="return /[0-9.]/.test(event.key)" oninput="formatAmountInput(this)">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="saveInitialBalance()">Сохранить остаток</button>
+                </div>
+
+                <div class="section">
                     <div class="form-group" style="margin-bottom: 12px;">
                         <label>ID Таблицы</label>
                         <textarea id="sheetId" placeholder="ID" style="height: 60px;"></textarea>
@@ -1069,6 +1083,19 @@
             }
         }
 
+        function saveInitialBalance() {
+            const sumStr = document.getElementById('initialSumInput').value.replace(/\s/g, '');
+            const usdStr = document.getElementById('initialUsdInput').value.replace(/\s/g, '');
+            const sum = parseFloat(sumStr) || 0;
+            const usd = parseFloat(usdStr) || 0;
+
+            appData.initialBalanceSUM = sum;
+            appData.initialBalanceUSD = usd;
+            saveData();
+            updateDashboard();
+            showMessage('Начальный остаток сохранен', 'success');
+        }
+
         function loadData() {
             const saved = localStorage.getItem('cashAppData');
             if (saved) appData = JSON.parse(saved);
@@ -1109,10 +1136,13 @@
             fab.style.display = tabName === 'dashboard' ? 'flex' : 'none';
             updateDashboard();
             
-            // Обновляем состояние кнопок темы при переходе в настройки
+            // Обновляем состояние кнопок темы и поля баланса при переходе в настройки
             if (tabName === 'settings') {
                 const currentTheme = localStorage.getItem('theme') || 'light';
                 setTimeout(() => setTheme(currentTheme), 0);
+                // Заполняем поля начального остатка
+                document.getElementById('initialSumInput').value = appData.initialBalanceSUM.toLocaleString('ru-RU');
+                document.getElementById('initialUsdInput').value = appData.initialBalanceUSD.toLocaleString('ru-RU');
             }
         }
 
