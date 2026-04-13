@@ -1,4 +1,4 @@
-        const ICONS = {
+const ICONS = {
             'Зарплата': '💼',
             'Электричество': '⚡',
             'Материалы': '📦',
@@ -30,8 +30,28 @@
             cashes: [
                 { id: 'cash_nalichnye', name: '💵 Наличные', type: 'cash' },
                 { id: 'cash_beznalichnye', name: '🏦 Безналичные', type: 'card' }
-            ]
+            ],
+            settingsUpdatedAt: 0
         };
+
+        // Поля настроек, которые синхронизируются между устройствами
+        // (всё кроме операций, deletedIds и реквизитов подключения)
+        const SYNCED_SETTINGS_KEYS = [
+            'initialBalances',
+            'initialBalanceSUM',
+            'initialBalanceUSD',
+            'expenseCategories',
+            'incomeCategories',
+            'exchangeRate',
+            'templates',
+            'cashes'
+        ];
+
+        // Помечает настройки как изменённые локально — чтобы при синхронизации
+        // другие устройства поняли, что нужно подтянуть свежую версию
+        function touchSettings() {
+            appData.settingsUpdatedAt = Date.now();
+        }
 
         let isSynced = false;
         let isOnline = navigator.onLine;
@@ -107,7 +127,10 @@
             }
         }
 
-        function saveData() {
+        function saveData(settingsChanged = false) {
+            if (settingsChanged) {
+                appData.settingsUpdatedAt = Date.now();
+            }
             localStorage.setItem('cashAppData', JSON.stringify(appData));
         }
 
@@ -231,7 +254,7 @@
             const input = document.getElementById('expenseCategoryInput');
             if (input.value.trim() && !appData.expenseCategories.includes(input.value.trim())) {
                 appData.expenseCategories.push(input.value.trim());
-                saveData();
+                saveData(true);
                 renderCategoryLists();
                 updateCategorySelect();
                 showMessage('Категория добавлена', 'success');
@@ -242,7 +265,7 @@
             const input = document.getElementById('incomeCategoryInput');
             if (input.value.trim() && !appData.incomeCategories.includes(input.value.trim())) {
                 appData.incomeCategories.push(input.value.trim());
-                saveData();
+                saveData(true);
                 renderCategoryLists();
                 updateCategorySelect();
                 showMessage('Категория добавлена', 'success');
@@ -254,7 +277,7 @@
             const idx = arr.indexOf(cat);
             if (idx > -1) {
                 arr.splice(idx, 1);
-                saveData();
+                saveData(true);
                 renderCategoryLists();
                 updateCategorySelect();
             }
@@ -789,7 +812,7 @@
             const rateStr = document.getElementById('exchangeRate').value.replace(/\s/g, '');
             currentExchangeRate = parseFloat(rateStr) || DEFAULT_EXCHANGE_RATE;
             appData.exchangeRate = currentExchangeRate;
-            saveData();
+            saveData(true);
             document.getElementById('currentRate').textContent = currentExchangeRate.toLocaleString('ru-RU');
         }
 
@@ -879,18 +902,23 @@
             try {
                 const response = await fetch(appData.deployUrl);
                 const data = await response.json();
+                let changed = false;
+
+                // === МЕРДЖ ОПЕРАЦИЙ (по id + deletedIds) ===
                 if (data.operations && Array.isArray(data.operations)) {
                     if (!appData.deletedIds) appData.deletedIds = [];
                     const localIds = new Set(appData.operations.map(op => op.id));
                     const remoteIds = new Set(data.operations.map(op => op.id));
-                    
-                    const toAdd = data.operations.filter(op => 
+
+                    const toAdd = data.operations.filter(op =>
                         !localIds.has(op.id) && !appData.deletedIds.includes(op.id)
                     );
-                    
                     const toDelete = Array.from(localIds).filter(id => !remoteIds.has(id));
-                    
-                    if (toAdd.length > 0) appData.operations.push(...toAdd);
+
+                    if (toAdd.length > 0) {
+                        appData.operations.push(...toAdd);
+                        changed = true;
+                    }
                     if (toDelete.length > 0) {
                         appData.operations = appData.operations.filter(op => !toDelete.includes(op.id));
                         toDelete.forEach(id => {
@@ -898,13 +926,38 @@
                                 appData.deletedIds.push(id);
                             }
                         });
+                        changed = true;
                     }
-                    
-                    if (toAdd.length > 0 || toDelete.length > 0) {
-                        saveData();
-                        updateDashboard();
-                        updateHistoryFilter();
-                    }
+                }
+
+                // === МЕРДЖ НАСТРОЕК (по timestamp — побеждает свежее) ===
+                const remoteSettingsTime = Number(data.settingsUpdatedAt) || 0;
+                const localSettingsTime = Number(appData.settingsUpdatedAt) || 0;
+
+                if (data.settings && remoteSettingsTime > localSettingsTime) {
+                    SYNCED_SETTINGS_KEYS.forEach(key => {
+                        if (data.settings[key] !== undefined) {
+                            appData[key] = data.settings[key];
+                        }
+                    });
+                    appData.settingsUpdatedAt = remoteSettingsTime;
+                    changed = true;
+
+                    // Подтянуть новые значения в живой UI
+                    currentExchangeRate = appData.exchangeRate || DEFAULT_EXCHANGE_RATE;
+                    const rateInput = document.getElementById('exchangeRate');
+                    if (rateInput) rateInput.value = currentExchangeRate.toLocaleString('ru-RU');
+                    renderCategoryLists();
+                    updateCategorySelect();
+                    updateCashSelects();
+                    renderTemplatesList();
+                }
+
+                if (changed) {
+                    saveData();
+                    updateDashboard();
+                    updateHistoryFilter();
+                    updateAnalytics();
                 }
             } catch (error) {
                 console.error('Load error:', error);
@@ -914,10 +967,23 @@
         async function syncWithGoogleAppsScript() {
             if (!appData.deployUrl || !isOnline) return;
             try {
-                const response = await fetch(appData.deployUrl, {
+                // Сначала тянем удалённые изменения, чтобы не перетереть свежие настройки
+                // с другого устройства своими старыми
+                await loadFromGoogleAppsScript();
+
+                // Собираем настройки в один объект для отправки
+                const settings = {};
+                SYNCED_SETTINGS_KEYS.forEach(key => {
+                    settings[key] = appData[key];
+                });
+
+                await fetch(appData.deployUrl, {
                     method: 'POST',
                     body: JSON.stringify({
                         operations: appData.operations,
+                        settings: settings,
+                        settingsUpdatedAt: appData.settingsUpdatedAt || 0,
+                        // Оставлено для обратной совместимости со старым Apps Script
                         initialBalanceSUM: appData.initialBalanceSUM,
                         initialBalanceUSD: appData.initialBalanceUSD
                     })
@@ -1062,9 +1128,11 @@
 
             appData.initialBalances[cashId] = { SUM: sum, USD: usd };
             
-            saveData();
+            saveData(true);
             updateDashboard();
             showMessage('Начальный остаток сохранен', 'success');
+            // Сразу же отправляем на сервер, чтобы другие устройства подтянули
+            if (isSynced && isOnline) syncWithGoogleAppsScript();
         }
 
         function updateInitialBalanceDisplay() {
@@ -1230,7 +1298,7 @@
                 currency: document.getElementById('templateCurrency').value
             });
 
-            saveData();
+            saveData(true);
             renderTemplatesList();
             
             document.getElementById('templateName').value = '';
@@ -1257,7 +1325,7 @@
         function deleteTemplate(index) {
             if (confirm('Удалить шаблон?')) {
                 appData.templates.splice(index, 1);
-                saveData();
+                saveData(true);
                 renderTemplatesList();
                 showMessage('Шаблон удален', 'success');
             }
