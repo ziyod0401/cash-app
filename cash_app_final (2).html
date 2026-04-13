@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учёт Кассы</title>
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #252525;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border: #333333;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-yellow: #f59e0b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .sync-status.connected {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .sync-status.error {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .sync-status.syncing {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            animation: pulse 2s infinite;
+        }
+
+        .sync-status.connected .sync-indicator {
+            background: var(--accent-green);
+        }
+
+        .sync-status.error .sync-indicator {
+            background: var(--accent-red);
+            animation: none;
+        }
+
+        .sync-status.syncing .sync-indicator {
+            background: var(--accent-blue);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            bottom: -1px;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-blue);
+            background: var(--bg-tertiary);
+        }
+
+        .card-label {
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -1px;
+        }
+
+        .card-sub {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        /* Forms */
+        .form-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .form-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        input, select, textarea {
+            padding: 10px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: var(--bg-tertiary);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #1e40af;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+            padding: 8px 14px;
+            font-size: 12px;
+            min-width: 80px;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .btn-danger {
+                padding: 10px 16px;
+                font-size: 13px;
+                min-width: 90px;
+            }
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Tables & Lists */
+        .operations-list {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .operation-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .operation-item:last-child {
+            border-bottom: none;
+        }
+
+        .operation-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .operation-left {
+            flex: 1;
+        }
+
+        .operation-category {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .operation-details {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .operation-right {
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .operation-amount {
+            font-size: 16px;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        .operation-amount.income {
+            color: var(--accent-green);
+        }
+
+        .operation-amount.expense {
+            color: var(--accent-red);
+        }
+
+        /* Analytics */
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .category-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .stat-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Settings */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .settings-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .settings-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        .category-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .category-input-group input {
+            flex: 1;
+        }
+
+        .category-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .category-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .category-tag .remove {
+            cursor: pointer;
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .info-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .info-box code {
+            background: var(--bg-primary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            color: var(--accent-blue);
+            word-break: break-all;
+        }
+
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-green);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+            max-width: 300px;
+        }
+
+        .error-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-red);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+            max-width: 300px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .operation-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .operation-right {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>📊 Учёт Кассы</h1>
+                <div class="header-subtitle">LLC PRO BIO FOODS</div>
+            </div>
+            <div class="sync-status" id="syncStatus">
+                <div class="sync-indicator"></div>
+                <span id="syncText">Не настроено</span>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">Панель</button>
+            <button class="tab-btn" onclick="switchTab('add')">Добавить</button>
+            <button class="tab-btn" onclick="switchTab('history')">История</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">Аналитика</button>
+            <button class="tab-btn" onclick="switchTab('settings')">Настройки</button>
+        </div>
+
+        <!-- DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-label">Остаток (SUM)</div>
+                    <div class="card-value" id="balanceSUM">0</div>
+                    <div class="card-sub" id="balanceSUMDetail"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Остаток (USD)</div>
+                    <div class="card-value" id="balanceUSD">0</div>
+                    <div class="card-sub" id="balanceUSDDetail"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Приходы сегодня</div>
+                    <div class="card-value" id="incomesToday">0</div>
+                    <div class="card-sub" id="incomesTodayDetail"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Расходы сегодня</div>
+                    <div class="card-value" id="expensesToday">0</div>
+                    <div class="card-sub" id="expensesTodayDetail"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Операций за 7 дней</div>
+                    <div class="card-value" id="operationsCount">0</div>
+                    <div class="card-sub">Всего транзакций</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-label">Средний расход</div>
+                    <div class="card-value" id="avgExpense">0</div>
+                    <div class="card-sub" id="avgExpenseDetail"></div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-title">📈 Последние операции</div>
+                <div id="recentOps" class="operations-list"></div>
+            </div>
+        </div>
+
+        <!-- ADD OPERATION TAB -->
+        <div id="add" class="tab-content">
+            <div class="form-section">
+                <div class="form-title">➕ Добавить операцию</div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Тип операции</label>
+                        <select id="operationType" onchange="updateCategorySelect()">
+                            <option value="expense">Расход</option>
+                            <option value="income">Приход</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <select id="category">
+                            <option>Выбрать категорию</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Сумма</label>
+                        <input type="number" id="amount" placeholder="0" step="0.01" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Валюта</label>
+                        <select id="currency">
+                            <option value="SUM">SUM (Сум)</option>
+                            <option value="USD">USD (Доллар)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Дата и время</label>
+                        <input type="datetime-local" id="dateTime">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Описание (опционально)</label>
+                        <input type="text" id="description" placeholder="Заметка">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <button class="btn btn-secondary" onclick="resetForm()">Очистить</button>
+                    <button class="btn btn-primary" id="addBtn" onclick="addOperation()">Добавить операцию</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY TAB -->
+        <div id="history" class="tab-content">
+            <div class="form-section" style="margin-bottom: 20px;">
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label>Фильтр по категории</label>
+                        <select id="filterCategory" onchange="filterOperations()">
+                            <option value="">Все категории</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label>Фильтр по типу</label>
+                        <select id="filterType" onchange="filterOperations()">
+                            <option value="">Все операции</option>
+                            <option value="expense">Только расходы</option>
+                            <option value="income">Только приходы</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 150px; display: flex; align-items: flex-end;">
+                        <button class="btn btn-primary" style="width: 100%;" onclick="exportToExcel()">📥 Excel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="historyList" class="operations-list"></div>
+        </div>
+
+        <!-- ANALYTICS TAB -->
+        <div id="analytics" class="tab-content">
+            <div class="chart-container">
+                <div class="chart-title">📊 Статистика по категориям (расходы)</div>
+                <div id="expenseStats" class="category-stats"></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">📊 Статистика по категориям (приходы)</div>
+                <div id="incomeStats" class="category-stats"></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">📅 Сумма по дням (последние 7 дней)</div>
+                <div id="dailyStats" class="category-stats"></div>
+            </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="settings" class="tab-content">
+            <div class="settings-grid">
+                <div class="settings-section">
+                    <div class="settings-title">☁️ Синхронизация Google Apps Script</div>
+                    
+                    <div class="info-box">
+                        Инструкция по настройке в файле <code>SETUP_GOOGLE_APPS_SCRIPT.md</code>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>ID Таблицы</label>
+                        <textarea id="sheetId" placeholder="Скопируй ID из URL таблицы" rows="2" style="font-size: 12px;"></textarea>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label>Deployment URL</label>
+                        <textarea id="deployUrl" placeholder="Скопируй URL из Apps Script" rows="2" style="font-size: 12px;"></textarea>
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" id="syncBtn" onclick="setupGoogleAppsScript()">🔗 Синхронизировать</button>
+                    <button class="btn btn-secondary" style="width: 100%;" onclick="downloadSetupGuide()">📖 Инструкция</button>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">💰 Начальный остаток</div>
+                    
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Остаток в SUM</label>
+                        <input type="number" id="initialSUM" placeholder="0" step="0.01">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label>Остаток в USD</label>
+                        <input type="number" id="initialUSD" placeholder="0" step="0.01">
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%;" onclick="saveInitialBalance()">Сохранить</button>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">🏷️ Категории расходов</div>
+                    
+                    <div class="category-input-group">
+                        <input type="text" id="expenseCategoryInput" placeholder="Новая категория">
+                        <button class="btn btn-primary" onclick="addExpenseCategory()" style="padding: 10px 16px;">+</button>
+                    </div>
+
+                    <div class="category-list" id="expenseCategoryList"></div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">🏷️ Категории приходов</div>
+                    
+                    <div class="category-input-group">
+                        <input type="text" id="incomeCategoryInput" placeholder="Новая категория">
+                        <button class="btn btn-primary" onclick="addIncomeCategory()" style="padding: 10px 16px;">+</button>
+                    </div>
+
+                    <div class="category-list" id="incomeCategoryList"></div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">⚙️ Экспорт/Импорт</div>
+                    
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="exportAllData()">📥 Загрузить данные</button>
+                    
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 16px;" onclick="document.getElementById('importInput').click()">📤 Загрузить резервную копию</button>
+
+                    <input type="file" id="importInput" style="display: none;" accept=".json" onchange="importData(event)">
+
+                    <button class="btn btn-danger" style="width: 100%;" onclick="clearAllData()">Очистить все данные</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure
+        let appData = {
+            initialBalanceSUM: 0,
+            initialBalanceUSD: 0,
+            expenseCategories: ['Зарплата', 'Электричество', 'Материалы', 'Транспорт', 'Прочее'],
+            incomeCategories: ['Продажи', 'Прочие приходы'],
+            operations: [],
+            sheetId: '',
+            deployUrl: ''
+        };
+
+        let isSynced = false;
+        let lastSync = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setDefaultDateTime();
+            updateCategorySelect();
+            renderCategoryLists();
+            updateDashboard();
+            updateHistoryFilter();
+            checkGoogleAppsScriptConnection();
+            // Auto-sync every 30 seconds
+            setInterval(checkGoogleAppsScriptConnection, 30000);
+        });
+
+        function loadData() {
+            const saved = localStorage.getItem('cashAppData');
+            if (saved) {
+                appData = JSON.parse(saved);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('cashAppData', JSON.stringify(appData));
+        }
+
+        function setDefaultDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('dateTime').value = `${year}-${month}-${day}T${hour}:${minute}`;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            updateDashboard();
+        }
+
+        function setupGoogleAppsScript() {
+            const sheetId = document.getElementById('sheetId').value.trim();
+            const deployUrl = document.getElementById('deployUrl').value.trim();
+
+            if (!sheetId || !deployUrl) {
+                showError('Заполни оба поля!');
+                return;
+            }
+
+            appData.sheetId = sheetId;
+            appData.deployUrl = deployUrl;
+            saveData();
+
+            testGoogleAppsScriptConnection();
+        }
+
+        function updateCategorySelect() {
+            const type = document.getElementById('operationType').value;
+            const categories = type === 'expense' ? appData.expenseCategories : appData.incomeCategories;
+            const select = document.getElementById('category');
+            select.innerHTML = '<option>Выбрать категорию</option>';
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        function renderCategoryLists() {
+            renderCategoryList('expenseCategoryList', 'expense');
+            renderCategoryList('incomeCategoryList', 'income');
+            document.getElementById('expenseCategoryInput').value = '';
+            document.getElementById('incomeCategoryInput').value = '';
+        }
+
+        function renderCategoryList(elementId, type) {
+            const categories = type === 'expense' ? appData.expenseCategories : appData.incomeCategories;
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            categories.forEach(cat => {
+                const tag = document.createElement('div');
+                tag.className = 'category-tag';
+                tag.innerHTML = `${cat} <span class="remove" onclick="removeCategory('${cat}', '${type}')">×</span>`;
+                container.appendChild(tag);
+            });
+        }
+
+        function addExpenseCategory() {
+            const input = document.getElementById('expenseCategoryInput');
+            if (input.value.trim()) {
+                appData.expenseCategories.push(input.value.trim());
+                saveData();
+                renderCategoryLists();
+                updateCategorySelect();
+                showSuccess('Категория добавлена');
+            }
+        }
+
+        function addIncomeCategory() {
+            const input = document.getElementById('incomeCategoryInput');
+            if (input.value.trim()) {
+                appData.incomeCategories.push(input.value.trim());
+                saveData();
+                renderCategoryLists();
+                updateCategorySelect();
+                showSuccess('Категория добавлена');
+            }
+        }
+
+        function removeCategory(category, type) {
+            const categories = type === 'expense' ? appData.expenseCategories : appData.incomeCategories;
+            const index = categories.indexOf(category);
+            if (index > -1) {
+                categories.splice(index, 1);
+                saveData();
+                renderCategoryLists();
+                updateCategorySelect();
+            }
+        }
+
+        function saveInitialBalance() {
+            appData.initialBalanceSUM = parseFloat(document.getElementById('initialSUM').value) || 0;
+            appData.initialBalanceUSD = parseFloat(document.getElementById('initialUSD').value) || 0;
+            saveData();
+            updateDashboard();
+            if (isSynced) syncWithGoogleAppsScript();
+            showSuccess('Начальный остаток сохранён');
+        }
+
+        function addOperation() {
+            const type = document.getElementById('operationType').value;
+            const category = document.getElementById('category').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const currency = document.getElementById('currency').value;
+            const dateTime = document.getElementById('dateTime').value;
+            const description = document.getElementById('description').value;
+
+            if (!category || category === 'Выбрать категорию' || !amount || amount <= 0 || !dateTime) {
+                showError('Заполните все поля');
+                return;
+            }
+
+            const operation = {
+                id: Date.now(),
+                type,
+                category,
+                amount,
+                currency,
+                dateTime: new Date(dateTime).getTime(),
+                description,
+                timestamp: new Date().getTime()
+            };
+
+            appData.operations.push(operation);
+            saveData();
+            updateDashboard();
+            updateHistoryFilter();
+            resetForm();
+            setDefaultDateTime();
+            showSuccess('Операция добавлена');
+
+            if (isSynced) {
+                syncWithGoogleAppsScript();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('operationType').value = 'expense';
+            document.getElementById('category').value = 'Выбрать категорию';
+            document.getElementById('amount').value = '';
+            document.getElementById('description').value = '';
+            setDefaultDateTime();
+            updateCategorySelect();
+        }
+
+        function updateDashboard() {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            let balanceSUM = appData.initialBalanceSUM;
+            let balanceUSD = appData.initialBalanceUSD;
+            let incomeTodaySUM = 0, incomeTodayUSD = 0;
+            let expenseTodaySUM = 0, expenseTodayUSD = 0;
+            let weekOperations = 0;
+
+            appData.operations.forEach(op => {
+                const opDate = new Date(op.dateTime);
+                const opToday = new Date(opDate.getFullYear(), opDate.getMonth(), opDate.getDate());
+
+                if (op.type === 'income') {
+                    if (op.currency === 'SUM') balanceSUM += op.amount;
+                    else balanceUSD += op.amount;
+                    if (opToday.getTime() === today.getTime()) {
+                        if (op.currency === 'SUM') incomeTodaySUM += op.amount;
+                        else incomeTodayUSD += op.amount;
+                    }
+                } else {
+                    if (op.currency === 'SUM') balanceSUM -= op.amount;
+                    else balanceUSD -= op.amount;
+                    if (opToday.getTime() === today.getTime()) {
+                        if (op.currency === 'SUM') expenseTodaySUM += op.amount;
+                        else expenseTodayUSD += op.amount;
+                    }
+                }
+
+                if (opDate >= weekAgo) weekOperations++;
+            });
+
+            document.getElementById('balanceSUM').textContent = formatCurrency(balanceSUM, 'SUM');
+            document.getElementById('balanceUSD').textContent = formatCurrency(balanceUSD, 'USD');
+            document.getElementById('balanceSUMDetail').textContent = `Всего: ${formatCurrency(balanceSUM, 'SUM')}`;
+            document.getElementById('balanceUSDDetail').textContent = `Всего: ${formatCurrency(balanceUSD, 'USD')}`;
+
+            document.getElementById('incomesToday').textContent = formatCurrency(incomeTodaySUM + incomeTodayUSD, 'SUM');
+            document.getElementById('incomesTodayDetail').textContent = `${formatCurrency(incomeTodaySUM, 'SUM')} + ${formatCurrency(incomeTodayUSD, 'USD')}`;
+
+            document.getElementById('expensesToday').textContent = formatCurrency(expenseTodaySUM + expenseTodayUSD, 'SUM');
+            document.getElementById('expensesTodayDetail').textContent = `${formatCurrency(expenseTodaySUM, 'SUM')} + ${formatCurrency(expenseTodayUSD, 'USD')}`;
+
+            document.getElementById('operationsCount').textContent = weekOperations;
+
+            const totalExpenses = appData.operations.filter(op => op.type === 'expense').length;
+            const avgExp = totalExpenses > 0 
+                ? appData.operations.filter(op => op.type === 'expense').reduce((sum, op) => sum + op.amount, 0) / totalExpenses
+                : 0;
+            document.getElementById('avgExpense').textContent = formatCurrency(avgExp, 'SUM');
+            document.getElementById('avgExpenseDetail').textContent = `На расход`;
+
+            const recent = appData.operations.slice().sort((a, b) => b.dateTime - a.dateTime).slice(0, 5);
+            const recentHtml = recent.length > 0 
+                ? recent.map(op => operationHTML(op)).join('')
+                : '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Нет операций</div></div>';
+            document.getElementById('recentOps').innerHTML = recentHtml;
+
+            document.getElementById('initialSUM').value = appData.initialBalanceSUM;
+            document.getElementById('initialUSD').value = appData.initialBalanceUSD;
+            document.getElementById('sheetId').value = appData.sheetId;
+            document.getElementById('deployUrl').value = appData.deployUrl;
+
+            updateAnalytics();
+        }
+
+        function operationHTML(op) {
+            const date = new Date(op.dateTime).toLocaleDateString('ru-RU');
+            const time = new Date(op.dateTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            const amountClass = op.type === 'income' ? 'income' : 'expense';
+            const sign = op.type === 'income' ? '+' : '−';
+            return `
+                <div class="operation-item">
+                    <div class="operation-left">
+                        <div class="operation-category">${op.category}</div>
+                        <div class="operation-details">
+                            <span>${date} ${time}</span>
+                            ${op.description ? `<span>${op.description}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="operation-right">
+                        <div class="operation-amount ${amountClass}">${sign} ${formatCurrency(op.amount, op.currency)}</div>
+                        <button class="btn btn-danger" onclick="deleteOperation(${op.id})">Удалить</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateHistoryFilter() {
+            const filterCategory = document.getElementById('filterCategory');
+            filterCategory.innerHTML = '<option value="">Все категории</option>';
+            
+            const allCategories = new Set([...appData.expenseCategories, ...appData.incomeCategories]);
+            allCategories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                filterCategory.appendChild(option);
+            });
+
+            filterOperations();
+        }
+
+        function filterOperations() {
+            const filterType = document.getElementById('filterType').value;
+            const filterCategory = document.getElementById('filterCategory').value;
+
+            let filtered = appData.operations.filter(op => {
+                const typeMatch = !filterType || op.type === filterType;
+                const categoryMatch = !filterCategory || op.category === filterCategory;
+                return typeMatch && categoryMatch;
+            });
+
+            filtered.sort((a, b) => b.dateTime - a.dateTime);
+
+            const html = filtered.length > 0
+                ? filtered.map(op => operationHTML(op)).join('')
+                : '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Нет операций</div></div>';
+            
+            document.getElementById('historyList').innerHTML = html;
+        }
+
+        function deleteOperation(id) {
+            if (confirm('Удалить операцию?')) {
+                appData.operations = appData.operations.filter(op => op.id !== id);
+                saveData();
+                updateDashboard();
+                updateHistoryFilter();
+                if (isSynced) syncWithGoogleAppsScript();
+                showSuccess('Операция удалена');
+            }
+        }
+
+        function updateAnalytics() {
+            updateCategoryStats('expenseStats', 'expense');
+            updateCategoryStats('incomeStats', 'income');
+            updateDailyStats();
+        }
+
+        function updateCategoryStats(elementId, type) {
+            const stats = {};
+            appData.operations.filter(op => op.type === type).forEach(op => {
+                if (!stats[op.category]) stats[op.category] = { count: 0, sum: 0 };
+                stats[op.category].count++;
+                stats[op.category].sum += op.amount;
+            });
+
+            const html = Object.entries(stats)
+                .sort((a, b) => b[1].sum - a[1].sum)
+                .map(([category, data]) => `
+                    <div class="stat-item">
+                        <div class="stat-label">${category}</div>
+                        <div class="stat-value">${formatCurrency(data.sum, 'SUM')}</div>
+                        <div class="stat-badge">Операций: ${data.count}</div>
+                    </div>
+                `)
+                .join('');
+
+            document.getElementById(elementId).innerHTML = html || '<div class="stat-item"><div class="stat-label">Нет данных</div></div>';
+        }
+
+        function updateDailyStats() {
+            const stats = {};
+            const today = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' });
+                stats[dateStr] = { income: 0, expense: 0 };
+            }
+
+            appData.operations.forEach(op => {
+                const opDate = new Date(op.dateTime);
+                const dateStr = opDate.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' });
+                if (stats[dateStr]) {
+                    if (op.type === 'income') stats[dateStr].income += op.amount;
+                    else stats[dateStr].expense += op.amount;
+                }
+            });
+
+            const html = Object.entries(stats).map(([date, data]) => `
+                <div class="stat-item">
+                    <div class="stat-label">${date}</div>
+                    <div style="font-size: 13px; color: var(--accent-green); margin-bottom: 6px;">+${formatCurrency(data.income, 'SUM')}</div>
+                    <div style="font-size: 13px; color: var(--accent-red);">−${formatCurrency(data.expense, 'SUM')}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('dailyStats').innerHTML = html;
+        }
+
+        function formatCurrency(value, currency) {
+            const formatted = new Intl.NumberFormat('ru-RU', { 
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0 
+            }).format(Math.abs(value));
+            return `${formatted} ${currency}`;
+        }
+
+        async function testGoogleAppsScriptConnection() {
+            if (!appData.deployUrl) return;
+
+            updateSyncStatus('Тестирование...', 'syncing');
+
+            try {
+                const response = await fetch(appData.deployUrl);
+                if (response.ok) {
+                    updateSyncStatus('Синхронизировано', 'connected');
+                    isSynced = true;
+                    lastSync = new Date();
+                    loadFromGoogleAppsScript();
+                    showSuccess('Подключение успешно!');
+                } else {
+                    updateSyncStatus('Ошибка подключения', 'error');
+                    isSynced = false;
+                    showError('Ошибка при подключении');
+                }
+            } catch (error) {
+                updateSyncStatus('Ошибка подключения', 'error');
+                isSynced = false;
+                showError('Ошибка: ' + error.message);
+            }
+        }
+
+        async function checkGoogleAppsScriptConnection() {
+            if (!appData.deployUrl) {
+                updateSyncStatus('Не настроено', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(appData.deployUrl);
+                if (response.ok) {
+                    updateSyncStatus('Синхронизировано', 'connected');
+                    isSynced = true;
+                    lastSync = new Date();
+                    loadFromGoogleAppsScript();
+                } else {
+                    updateSyncStatus('Ошибка подключения', 'error');
+                    isSynced = false;
+                }
+            } catch (error) {
+                updateSyncStatus('Ошибка подключения', 'error');
+                isSynced = false;
+            }
+        }
+
+        function updateSyncStatus(text, status) {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.className = `sync-status ${status}`;
+            document.getElementById('syncText').textContent = text;
+        }
+
+        async function loadFromGoogleAppsScript() {
+            if (!appData.deployUrl) return;
+
+            try {
+                const response = await fetch(appData.deployUrl);
+                const data = await response.json();
+                
+                if (data.operations && Array.isArray(data.operations)) {
+                    const localIds = new Set(appData.operations.map(op => op.id));
+                    const toAdd = data.operations.filter(op => !localIds.has(op.id));
+                    
+                    if (toAdd.length > 0) {
+                        appData.operations.push(...toAdd);
+                        saveData();
+                        updateDashboard();
+                        updateHistoryFilter();
+                    }
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+            }
+        }
+
+        async function syncWithGoogleAppsScript() {
+            if (!appData.deployUrl) return;
+
+            try {
+                const response = await fetch(appData.deployUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        operations: appData.operations,
+                        initialBalanceSUM: appData.initialBalanceSUM,
+                        initialBalanceUSD: appData.initialBalanceUSD
+                    })
+                });
+
+                if (!response.ok) {
+                    console.error('Sync error:', response.status);
+                }
+            } catch (error) {
+                console.error('Sync error:', error);
+            }
+        }
+
+        function exportToExcel() {
+            try {
+                if (typeof XLSX === 'undefined') {
+                    showError('Библиотека Excel еще загружается, подожди секунду и попробуй снова');
+                    return;
+                }
+
+                const data = [
+                    ['Дата', 'Время', 'Тип', 'Категория', 'Сумма', 'Валюта', 'Описание']
+                ];
+                
+                appData.operations.slice().sort((a, b) => a.dateTime - b.dateTime).forEach(op => {
+                    const date = new Date(op.dateTime);
+                    const dateStr = date.toLocaleDateString('ru-RU');
+                    const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                    data.push([
+                        dateStr,
+                        timeStr,
+                        op.type === 'income' ? 'Приход' : 'Расход',
+                        op.category,
+                        op.amount,
+                        op.currency,
+                        op.description || ''
+                    ]);
+                });
+
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Касса");
+                
+                // Форматирование колонок
+                ws['!cols'] = [
+                    { wch: 12 },
+                    { wch: 10 },
+                    { wch: 10 },
+                    { wch: 15 },
+                    { wch: 12 },
+                    { wch: 8 },
+                    { wch: 20 }
+                ];
+
+                const fileName = `cash_report_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                showSuccess('Данные экспортированы в Excel');
+            } catch (error) {
+                showError('Ошибка при экспорте: ' + error.message);
+            }
+        }
+
+        function exportAllData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `cash_backup_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.json`);
+            link.click();
+            showSuccess('Резервная копия загружена');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    appData = imported;
+                    saveData();
+                    updateDashboard();
+                    updateHistoryFilter();
+                    renderCategoryLists();
+                    showSuccess('Данные загружены');
+                } catch (error) {
+                    showError('Ошибка при загрузке файла');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function downloadSetupGuide() {
+            showSuccess('Смотри файл SETUP_GOOGLE_APPS_SCRIPT.md');
+        }
+
+        function clearAllData() {
+            if (confirm('Это удалит ВСЕ данные! Вы уверены?')) {
+                appData = {
+                    initialBalanceSUM: 0,
+                    initialBalanceUSD: 0,
+                    expenseCategories: ['Зарплата', 'Электричество', 'Материалы', 'Транспорт', 'Прочее'],
+                    incomeCategories: ['Продажи', 'Прочие приходы'],
+                    operations: [],
+                    sheetId: appData.sheetId,
+                    deployUrl: appData.deployUrl
+                };
+                saveData();
+                updateDashboard();
+                updateHistoryFilter();
+                renderCategoryLists();
+                showSuccess('Данные очищены');
+                if (isSynced) syncWithGoogleAppsScript();
+            }
+        }
+
+        function showSuccess(message) {
+            const msg = document.createElement('div');
+            msg.className = 'success-message';
+            msg.textContent = message;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+
+        function showError(message) {
+            const msg = document.createElement('div');
+            msg.className = 'error-message';
+            msg.textContent = message;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
