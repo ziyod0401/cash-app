@@ -35,7 +35,7 @@ const ICONS = {
         };
 
         // Поля настроек, которые синхронизируются между устройствами
-        // (всё кроме операций, deletedIds и реквизитов подключения)
+        // (всё кроме операций и реквизитов подключения)
         const SYNCED_SETTINGS_KEYS = [
             'initialBalances',
             'initialBalanceSUM',
@@ -44,7 +44,8 @@ const ICONS = {
             'incomeCategories',
             'exchangeRate',
             'templates',
-            'cashes'
+            'cashes',
+            'deletedIds'
         ];
 
         // Помечает настройки как изменённые локально — чтобы при синхронизации
@@ -690,7 +691,7 @@ const ICONS = {
                 if (!appData.deletedIds.includes(id)) {
                     appData.deletedIds.push(id);
                 }
-                saveData();
+                saveData(true);
                 updateDashboard();
                 updateHistoryFilter();
                 if (isSynced && isOnline) syncWithGoogleAppsScript();
@@ -904,30 +905,30 @@ const ICONS = {
                 const data = await response.json();
                 let changed = false;
 
-                // === МЕРДЖ ОПЕРАЦИЙ (по id + deletedIds) ===
+                // === МЕРДЖ ОПЕРАЦИЙ ===
+                // Только ДОБАВЛЯЕМ новые операции с сервера.
+                // Удаление — только через deletedIds (явно удалённые пользователем).
+                // Отсутствие операции на сервере НЕ считается удалением — иначе только что
+                // добавленная локально операция исчезнет при первом же чтении с сервера.
                 if (data.operations && Array.isArray(data.operations)) {
                     if (!appData.deletedIds) appData.deletedIds = [];
                     const localIds = new Set(appData.operations.map(op => op.id));
-                    const remoteIds = new Set(data.operations.map(op => op.id));
+                    const deletedSet = new Set(appData.deletedIds);
 
                     const toAdd = data.operations.filter(op =>
-                        !localIds.has(op.id) && !appData.deletedIds.includes(op.id)
+                        !localIds.has(op.id) && !deletedSet.has(op.id)
                     );
-                    const toDelete = Array.from(localIds).filter(id => !remoteIds.has(id));
 
                     if (toAdd.length > 0) {
                         appData.operations.push(...toAdd);
                         changed = true;
                     }
-                    if (toDelete.length > 0) {
-                        appData.operations = appData.operations.filter(op => !toDelete.includes(op.id));
-                        toDelete.forEach(id => {
-                            if (!appData.deletedIds.includes(id)) {
-                                appData.deletedIds.push(id);
-                            }
-                        });
-                        changed = true;
-                    }
+
+                    // Убираем локальные операции, которые есть в deletedIds (вдруг
+                    // они пришли с другого устройства и там же были удалены)
+                    const beforeLen = appData.operations.length;
+                    appData.operations = appData.operations.filter(op => !deletedSet.has(op.id));
+                    if (appData.operations.length !== beforeLen) changed = true;
                 }
 
                 // === МЕРДЖ НАСТРОЕК (по timestamp — побеждает свежее) ===
@@ -937,7 +938,14 @@ const ICONS = {
                 if (data.settings && remoteSettingsTime > localSettingsTime) {
                     SYNCED_SETTINGS_KEYS.forEach(key => {
                         if (data.settings[key] !== undefined) {
-                            appData[key] = data.settings[key];
+                            // deletedIds объединяем (union), а не заменяем —
+                            // иначе удаления с одного устройства потеряются
+                            if (key === 'deletedIds' && Array.isArray(appData[key])) {
+                                const merged = new Set([...appData[key], ...data.settings[key]]);
+                                appData[key] = Array.from(merged);
+                            } else {
+                                appData[key] = data.settings[key];
+                            }
                         }
                     });
                     appData.settingsUpdatedAt = remoteSettingsTime;
