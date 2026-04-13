@@ -1020,7 +1020,8 @@
             incomeCategories: ['Продажи', 'Прочие приходы'],
             operations: [],
             sheetId: '',
-            deployUrl: ''
+            deployUrl: '',
+            deletedIds: []
         };
 
         let isSynced = false;
@@ -1195,16 +1196,21 @@
         }
 
         function addOperation() {
-            const type = document.getElementById('operationType').value;
-            const category = document.getElementById('category').value;
+            let type = document.getElementById('operationType').value;
+            let category = document.getElementById('category').value;
             const amountStr = document.getElementById('amount').value.replace(/\s/g, '');
             const amount = parseFloat(amountStr);
             const currency = document.getElementById('currency').value;
             const dateTime = document.getElementById('dateTime').value;
             const description = document.getElementById('description').value;
 
-            if (!category || category === 'Выбрать' || !amount || amount <= 0 || !dateTime) {
-                showMessage('Заполните все поля', 'error');
+            // Если категория не выбрана, ставим прочие автоматически
+            if (!category || category === 'Выбрать') {
+                category = type === 'expense' ? 'Прочее' : 'Прочие приходы';
+            }
+
+            if (!amount || amount <= 0 || !dateTime) {
+                showMessage('Заполните сумму и дату', 'error');
                 return;
             }
 
@@ -1410,6 +1416,11 @@
         function deleteOperation(id) {
             if (confirm('Удалить операцию?')) {
                 appData.operations = appData.operations.filter(op => op.id !== id);
+                // Помечаем как удаленную чтобы не подгружалась при синхронизации
+                if (!appData.deletedIds) appData.deletedIds = [];
+                if (!appData.deletedIds.includes(id)) {
+                    appData.deletedIds.push(id);
+                }
                 saveData();
                 updateDashboard();
                 updateHistoryFilter();
@@ -1592,12 +1603,29 @@
                 const response = await fetch(appData.deployUrl);
                 const data = await response.json();
                 if (data.operations && Array.isArray(data.operations)) {
+                    if (!appData.deletedIds) appData.deletedIds = [];
                     const localIds = new Set(appData.operations.map(op => op.id));
                     const remoteIds = new Set(data.operations.map(op => op.id));
-                    const toAdd = data.operations.filter(op => !localIds.has(op.id));
+                    
+                    // Добавляем только новые операции которые не были удалены локально
+                    const toAdd = data.operations.filter(op => 
+                        !localIds.has(op.id) && !appData.deletedIds.includes(op.id)
+                    );
+                    
+                    // Удаляем операции которые удалили на другом устройстве
                     const toDelete = Array.from(localIds).filter(id => !remoteIds.has(id));
+                    
                     if (toAdd.length > 0) appData.operations.push(...toAdd);
-                    if (toDelete.length > 0) appData.operations = appData.operations.filter(op => !toDelete.includes(op.id));
+                    if (toDelete.length > 0) {
+                        appData.operations = appData.operations.filter(op => !toDelete.includes(op.id));
+                        // Добавляем в deletedIds чтобы они не подгружались снова
+                        toDelete.forEach(id => {
+                            if (!appData.deletedIds.includes(id)) {
+                                appData.deletedIds.push(id);
+                            }
+                        });
+                    }
+                    
                     if (toAdd.length > 0 || toDelete.length > 0) {
                         saveData();
                         updateDashboard();
