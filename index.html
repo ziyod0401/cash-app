@@ -777,7 +777,7 @@
 
                     <div class="form-group">
                         <label>Сумма</label>
-                        <input type="number" id="amount" placeholder="0" step="0.01" min="0">
+                        <input type="number" id="amount" placeholder="0" step="0.01" min="0" inputmode="decimal">
                     </div>
 
                     <div class="form-group">
@@ -919,12 +919,12 @@
 
             <div class="form-group" style="margin-bottom: 16px;">
                 <label>Фактический SUM</label>
-                <input type="number" id="actualBalanceSUM" placeholder="0" step="0.01">
+                <input type="number" id="actualBalanceSUM" placeholder="0" step="0.01" inputmode="decimal">
             </div>
 
             <div class="form-group" style="margin-bottom: 16px;">
                 <label>Фактический USD</label>
-                <input type="number" id="actualBalanceUSD" placeholder="0" step="0.01">
+                <input type="number" id="actualBalanceUSD" placeholder="0" step="0.01" inputmode="decimal">
             </div>
 
             <div class="form-group" style="margin-bottom: 20px;">
@@ -1268,6 +1268,7 @@
             const time = new Date(op.dateTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
             const amountClass = op.type === 'income' ? 'income' : 'expense';
             const sign = op.type === 'income' ? '+' : '−';
+            const formattedAmount = op.amount.toLocaleString('ru-RU');
             return `
                 <div class="operation-item">
                     <div class="operation-left">
@@ -1278,7 +1279,7 @@
                         </div>
                     </div>
                     <div class="operation-right">
-                        <div class="operation-amount ${amountClass}">${sign} ${formatCurrency(op.amount)} ${op.currency}</div>
+                        <div class="operation-amount ${amountClass}">${sign} ${formattedAmount} ${op.currency}</div>
                         <button class="btn btn-danger btn-small" onclick="deleteOperation(${op.id})">Удалить</button>
                     </div>
                 </div>
@@ -1475,10 +1476,21 @@
                 
                 if (data.operations && Array.isArray(data.operations)) {
                     const localIds = new Set(appData.operations.map(op => op.id));
-                    const toAdd = data.operations.filter(op => !localIds.has(op.id));
+                    const remoteIds = new Set(data.operations.map(op => op.id));
                     
+                    // Добавляем новые операции
+                    const toAdd = data.operations.filter(op => !localIds.has(op.id));
                     if (toAdd.length > 0) {
                         appData.operations.push(...toAdd);
+                    }
+                    
+                    // Удаляем операции которые удалили на другом устройстве
+                    const toDelete = Array.from(localIds).filter(id => !remoteIds.has(id));
+                    if (toDelete.length > 0) {
+                        appData.operations = appData.operations.filter(op => !toDelete.includes(op.id));
+                    }
+                    
+                    if (toAdd.length > 0 || toDelete.length > 0) {
                         saveData();
                         updateDashboard();
                         updateHistoryFilter();
